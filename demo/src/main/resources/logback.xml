@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+	<property name="LOG_HOME" value="${log.dir:-logs}/" />
+	<property name="ENCODER_PATTERN"
+		value="%d{yyyy-MM-dd  HH:mm:ss.SSS} %-5level [%10.10thread] %logger{20} - %msg%n" />
+	<property name="PREFORM_PATTERN" value="%d{yyyy-MM-dd  HH:mm:ss.SSS} - %msg%n" />
+	<contextName>${APP_NAME}</contextName>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>${ENCODER_PATTERN}</Pattern>
+		</encoder>
+	</appender>
+	<root>
+		<level value="INFO" />
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>  
