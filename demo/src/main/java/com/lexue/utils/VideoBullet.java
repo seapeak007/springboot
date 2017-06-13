@@ -3,6 +3,7 @@ package com.lexue.utils;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
 import java.util.HashMap;
 
 /**
@@ -15,8 +16,14 @@ public class VideoBullet {
      * meta  你好 helloworld  外面的世界123
      */
 
+    /**
+     * 转码采用对象的方式进行模块处理，index  meta  header分别对象处理，便于后续维护
+     * 转码的工具类，在新的项目Tools中有转码工具BytesUtils，跟类型识别工具类
+     * 每个类中增加一个bulid方法，生成本类的二进制bytes[]
+     * @param args
+     */
 
-    public static  void main(String args[]){
+    public static  void main(String args[]) throws Exception{
 
         HashMap<String,String> index = new HashMap<String,String>() ;
 
@@ -73,6 +80,13 @@ public class VideoBullet {
         System.arraycopy(strbyte ,0,indexbytes,32,strbyte.length);
 
         System.out.println("aaa:"+indexbytes.length);
+        MessageDigest digest = MessageDigest.getInstance("MD5");
+        byte[] bmd = digest.digest() ;
+        System.out.println(bmd.length);
+
+        System.out.println("strbyte1:"+BytesUtils.convertStringToBytes("沙发客垃圾发").length);
+
+        System.out.println("strbyte2:"+BytesUtils.convertStringToBytes("就个人而言，推荐使用目前最新的Camden版本与Spring Boot 1.4.x的组合。首先，不光光是Spring Boot版本提升带来的一些新功能，另外也由于Spring Cloud的组件版本也有提升，比如Brixton版本中的Spring Cloud Netflix采用了1.1.x，而Camden中采用了1.2.x，这两个版本之间还有不少区别的，在1.2.x中提供了更多实用功能，比如：之前在《为Spring Cloud Ribbon配置请求重试（Camden.SR2+）》一文中提到的RestTemplate的请求重试、关于Zuul的一些头信息优化等。").length);
 
         //逆向转化出来
         outBytes(indexbytes,strbtlen) ;

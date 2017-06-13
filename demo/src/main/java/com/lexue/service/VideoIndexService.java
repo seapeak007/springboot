@@ -1,12 +1,14 @@
 package com.lexue.service;
 
-import com.lexue.jpa.entity.VideoBulletIndex;
+import com.lexue.domain.VideoBulletIndex;
+
+import java.util.List;
 
 /**
  * Created by UI03 on 2017/6/9.
  */
 public interface VideoIndexService {
-    VideoBulletIndex queryVideoIndexByVideo(int video_id) ;
-    VideoBulletIndex queryVideoIndexById(int id) ;
+    List<VideoBulletIndex> queryVideoIndexByVideoid(int video_id) ;
+    VideoBulletIndex queryVideoIndexById(long id) ;
 
 }
