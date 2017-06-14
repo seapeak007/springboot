@@ -19,6 +19,8 @@ public class VbMeta {
     private short contentType ;
     private long count ;
     private short display ;
+    @Column(name ="create_time")
+    private long createTime ;
     @Column(name ="update_time")
     private long updateTime ;
 

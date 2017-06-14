@@ -17,21 +17,21 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CacheConfig {
 
-    public static final String DOMAIN_CACHE = "META_CACHE";
+    public static final String META_CACHE = "META_CACHE";
 
-    public static final String SECRET_CACHE = "INDEX_USER_CACHE";
+    public static final String INDUSER_CACHE = "INDUSER_CACHE";
 
     @Bean
     public Cache domainCache() {
-        return new GuavaCache(DOMAIN_CACHE, CacheBuilder.newBuilder()
-                .maximumSize(100)
-                .expireAfterWrite(30, TimeUnit.SECONDS)
+        return new GuavaCache(META_CACHE, CacheBuilder.newBuilder()
+                .maximumSize(3)
+                .expireAfterWrite(60, TimeUnit.SECONDS)
                 .build());
     }
 
     @Bean
     public Cache secretCache() {
-        return new GuavaCache(SECRET_CACHE, CacheBuilder.newBuilder()
+        return new GuavaCache(INDUSER_CACHE, CacheBuilder.newBuilder()
                 .maximumSize(100000)
                 .expireAfterWrite(30, TimeUnit.SECONDS)
                 .build());
