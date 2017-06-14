@@ -1,7 +1,7 @@
 package com.lexue.restful;
 
-import com.lexue.domain.VideoBulletIndex;
-import com.lexue.service.VideoIndexService;
+import com.lexue.domain.VbIndex;
+import com.lexue.service.VbIndexService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,13 +15,13 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value="/video")
-public class VideoIndexController {
+public class VbIndexController {
 
-    private final VideoIndexService videoIndexService;
+    private final VbIndexService vbIndexService;
 
     @Autowired
-    public VideoIndexController(VideoIndexService videoIndexService){
-        this.videoIndexService = videoIndexService ;
+    public VbIndexController(VbIndexService vbIndexService){
+        this.vbIndexService = vbIndexService ;
     }
 
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
@@ -30,23 +30,10 @@ public class VideoIndexController {
         return "hello world " ;
     }
 
-    @RequestMapping(value = "/index", method = RequestMethod.GET)
-    public String  queryVideoIndex(@RequestParam long id){
-
-        VideoBulletIndex vb =  this.videoIndexService.queryVideoIndexById(id);
-        if(vb==null){
-            return "null" ;
-        }else{
-            return vb.toString() ;
-        }
-
-
-    }
-
     @RequestMapping(value = "/bullet", method = RequestMethod.GET)
     public String  genBullet(@RequestParam int video_id){
 
-        List<VideoBulletIndex> vblist =  this.videoIndexService.queryVideoIndexByVideoid(video_id);
+        List<VbIndex> vblist =  this.vbIndexService.queryVbIndexByVideoid(video_id);
         return vblist.toString() ;
     }
 }
