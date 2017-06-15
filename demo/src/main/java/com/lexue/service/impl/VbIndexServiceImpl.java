@@ -27,8 +27,8 @@ public class VbIndexServiceImpl implements VbIndexService {
         return  vbIndexRepository.findByVideoId(video_id) ;
     }
 
-    public List<VbBullet> queryVbBulletsByVideoid(int video_id) {
-        return vbIndexRepository.findBulletsByVideo(video_id) ;
+    public List<VbBullet> queryVbBulletsByVideoid(long timestamp ,int video_id) {
+        return vbIndexRepository.findBulletsByVideo(timestamp,video_id) ;
     }
 
 }

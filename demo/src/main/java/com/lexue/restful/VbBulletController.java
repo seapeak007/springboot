@@ -45,7 +45,8 @@ public class VbBulletController {
 //        return vblist.toString() ;
 //        List<VbMeta> metalist = this.vbMetaService.getMetas() ;
 //        return metalist.toString() ;
-        List<VbBullet> bulletlist = this.vbIndexService.queryVbBulletsByVideoid(video_id) ;
+        long timestamp =200 ;
+        List<VbBullet> bulletlist = this.vbIndexService.queryVbBulletsByVideoid(timestamp ,video_id) ;
         return bulletlist.toString() ;
     }
 }

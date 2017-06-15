@@ -10,6 +10,6 @@ import java.util.List;
  */
 public interface VbIndexService {
     List<VbIndex> queryVbIndexByVideoid(int video_id) ;
-    List<VbBullet> queryVbBulletsByVideoid(int video_id) ;
+    List<VbBullet> queryVbBulletsByVideoid(long timestamp ,int video_id) ;
 
 }
