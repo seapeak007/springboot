@@ -1,5 +1,6 @@
 package com.lexue.service;
 
+import com.lexue.domain.VbBullet;
 import com.lexue.domain.VbIndex;
 
 import java.util.List;
@@ -9,5 +10,6 @@ import java.util.List;
  */
 public interface VbIndexService {
     List<VbIndex> queryVbIndexByVideoid(int video_id) ;
+    List<VbBullet> queryVbBulletsByVideoid(int video_id) ;
 
 }

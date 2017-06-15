@@ -1,5 +1,6 @@
 package com.lexue.service.impl;
 
+import com.lexue.domain.VbBullet;
 import com.lexue.domain.VbIndex;
 import com.lexue.repository.VbIndexRepository;
 import com.lexue.service.VbIndexService;
@@ -24,6 +25,10 @@ public class VbIndexServiceImpl implements VbIndexService {
     public List<VbIndex> queryVbIndexByVideoid(int video_id){
 
         return  vbIndexRepository.findByVideoId(video_id) ;
+    }
+
+    public List<VbBullet> queryVbBulletsByVideoid(int video_id) {
+        return vbIndexRepository.findBulletsByVideo(video_id) ;
     }
 
 }

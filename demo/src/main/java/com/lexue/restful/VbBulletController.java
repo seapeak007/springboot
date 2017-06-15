@@ -1,5 +1,6 @@
 package com.lexue.restful;
 
+import com.lexue.domain.VbBullet;
 import com.lexue.domain.VbIndex;
 import com.lexue.domain.VbMeta;
 import com.lexue.service.VbIndexService;
@@ -42,7 +43,9 @@ public class VbBulletController {
 
 //        List<VbIndex> vblist =  this.vbIndexService.queryVbIndexByVideoid(video_id);
 //        return vblist.toString() ;
-        List<VbMeta> metalist = this.vbMetaService.getMetas() ;
-        return metalist.toString() ;
+//        List<VbMeta> metalist = this.vbMetaService.getMetas() ;
+//        return metalist.toString() ;
+        List<VbBullet> bulletlist = this.vbIndexService.queryVbBulletsByVideoid(video_id) ;
+        return bulletlist.toString() ;
     }
 }
