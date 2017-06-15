@@ -2,6 +2,8 @@ package com.lexue.domain;
 
 import lombok.Data;
 
+import javax.persistence.Id;
+
 /**
  * Created by UI03 on 2017/6/15.
  */
