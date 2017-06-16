@@ -30,4 +30,8 @@ public class VbBulletServiceImpl implements VbBulletService {
     public Page<VbBullet> queryVbBulletsPageByVideoid(long timestamp , int video_id , Pageable pageable){
         return  vbIndexRepository.findBulletsPageByVideo(timestamp,video_id,pageable) ;
     }
+
+    public int queryVbBulletsCountByVideoid(long timestamp , int video_id ){
+        return  vbIndexRepository.queryVbBulletsCountByVideoid(timestamp,video_id) ;
+    }
 }

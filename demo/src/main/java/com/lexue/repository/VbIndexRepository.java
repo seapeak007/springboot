@@ -30,4 +30,8 @@ public interface VbIndexRepository extends JpaRepository<VbIndex,Long> {
             " and i.videoId=?2 ORDER BY i.timestamp ASC ")
     Page<VbBullet> findBulletsPageByVideo(@Param("create_time") long create_time , @Param("video_id") int videoId,Pageable pageable) ;
 
+    @Query(value = "select count(1) from VbIndex i ,VbUser u ,VbMeta m " +
+            " where i.indexId=u.indexId and i.metaId= m.metaId and m.display=0 and i.createTime <?1 and m.createTime<?1 and u.createTime < ?1 " +
+            " and i.videoId=?2  ")
+    int queryVbBulletsCountByVideoid(@Param("create_time") long create_time ,@Param("video_id") int videoId) ;
 }

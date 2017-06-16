@@ -1,14 +1,16 @@
 package com.lexue.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.security.MessageDigest;
 import java.util.HashMap;
 
 /**
  * Created by UI03 on 2017/6/8.
  */
+@Slf4j
 public class VideoBullet {
     /**
      * user  220 221 223
@@ -31,7 +33,6 @@ public class VideoBullet {
         int im1 = "你好".hashCode()  ;
         int im2 = "helloworld".hashCode() ;
         int im3 = "外面的世界123".hashCode() ;
-
 
         HashMap<String,String> meta1 = new HashMap<String,String>() ;
         meta1.put("hashcode",String.valueOf(im1)) ;
@@ -97,7 +98,8 @@ public class VideoBullet {
         outBytes(indexbytes,strbtlen) ;
 
         //写入到文件
-        writeToFile(indexbytes) ;
+        String filename = "d://videoout.index";
+        FileUtils.writeToFile(indexbytes,filename) ;
 
         System.out.println("写入到文件 ok") ;
 
@@ -145,32 +147,7 @@ public class VideoBullet {
 
         }
     }
-    public static void writeToFile(byte[] indexbytes){
-        String filename = "d://videoout.index";
-        FileOutputStream fos = null;
-        try {
 
-            fos = new FileOutputStream(new File(filename));
-            FileChannel fc = fos.getChannel();
-            ByteBuffer bbf = ByteBuffer.allocate(1024);
-            bbf.put(indexbytes) ;
-            bbf.flip();
-            fc.write(bbf) ;
-
-            fc.close();
-            fos.close();
-        }catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     public static void readFromFile(int strbtlen){
         String pathname = "d://videoout.index";

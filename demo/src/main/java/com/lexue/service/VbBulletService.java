@@ -12,4 +12,5 @@ import java.util.List;
 public interface VbBulletService {
     List<VbBullet> queryVbBulletsByVideoid(long timestamp , int video_id) ;
     Page<VbBullet> queryVbBulletsPageByVideoid(long timestamp , int video_id , Pageable pageable) ;
+    int queryVbBulletsCountByVideoid(long timestamp , int video_id ) ;
 }
