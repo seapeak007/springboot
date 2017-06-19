@@ -98,14 +98,15 @@ public class VbBulletController {
                     mh.setVid(video_id);
                     mh.setVer(ver);
                     mh.setTimestamp(filetimes);
-                    mh.setIndex_offset(Long.valueOf("48"));//header的长度
+                    mh.setIndex_offset(Long.valueOf("56"));//header的长度
                     mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
                     mh.setIndex_record_length(metaIndexlen);
-                    mh.setData_offset(Long.valueOf(String.valueOf(48+ibytelen)));
+                    mh.setData_offset(Long.valueOf(String.valueOf(56+ibytelen)));
                     mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
                     FileUtils.writeToFile(mh.bulid(),headtemp) ;
+                    log.info(ibytelen+"||"+mbytelen);
 
 
                     //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
@@ -166,14 +167,15 @@ public class VbBulletController {
                     mh.setVid(video_id);
                     mh.setVer(ver);
                     mh.setTimestamp(filetimes);
-                    mh.setIndex_offset(Long.valueOf("48"));//header的长度
+                    mh.setIndex_offset(Long.valueOf("56"));//header的长度
                     mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
                     mh.setIndex_record_length(metaIndexlen);
-                    mh.setData_offset(Long.valueOf(String.valueOf(48+ibytelen)));
+                    mh.setData_offset(Long.valueOf(String.valueOf(56+ibytelen)));
                     mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
                     FileUtils.writeToFile(mh.bulid(),headtemp) ;
+                    log.info(ibytelen+"||"+mbytelen);
 
                     //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
                     ArrayList<String> fileArray = new ArrayList<String>() ;

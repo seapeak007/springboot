@@ -29,10 +29,10 @@ public class MetaHeader {
             System.arraycopy(BytesUtils.convertLongToBytes(this.timestamp),0,rtn,8,8);
             System.arraycopy(BytesUtils.convertLongToBytes(this.index_offset),0,rtn,16,8);
             System.arraycopy(BytesUtils.convertLongToBytes(this.index_length),0,rtn,24,8);
-            System.arraycopy(BytesUtils.convertIntToBytes(this.index_record_length),0,rtn,24,4);
-            System.arraycopy(BytesUtils.convertLongToBytes(this.data_offset),0,rtn,28,8);
-            System.arraycopy(BytesUtils.convertLongToBytes(this.data_length),0,rtn,36,8);
-            System.arraycopy(BytesUtils.convertIntToBytes(this.data_record_length),0,rtn,44,4);
+            System.arraycopy(BytesUtils.convertIntToBytes(this.index_record_length),0,rtn,32,4);
+            System.arraycopy(BytesUtils.convertLongToBytes(this.data_offset),0,rtn,36,8);
+            System.arraycopy(BytesUtils.convertLongToBytes(this.data_length),0,rtn,44,8);
+            System.arraycopy(BytesUtils.convertIntToBytes(this.data_record_length),0,rtn,52,4);
             return rtn ;
         }else{
             return null ;
