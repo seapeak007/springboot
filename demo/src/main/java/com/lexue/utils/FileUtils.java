@@ -16,6 +16,8 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Set;
 
+import static org.apache.catalina.startup.ExpandWar.deleteDir;
+
 /**
  * Created by UI03 on 2017/6/16.
  */
@@ -89,7 +91,7 @@ public class FileUtils {
 
                     int capacity = 1024;// 字节
                     ByteBuffer bf = ByteBuffer.allocate(capacity);
-                    System.out.println("限制是：" + bf.limit() + "容量是：" + bf.capacity()+ "位置是：" + bf.position());
+//                    System.out.println("限制是：" + bf.limit() + "容量是：" + bf.capacity()+ "位置是：" + bf.position());
                     int length = -1;
                     while ((length = channel.read(bf)) != -1) {
 
@@ -100,7 +102,7 @@ public class FileUtils {
 
                         int outlength =0;
                         while((outlength=outchannel.write(bf)) != 0){
-                            System.out.println("读，"+length+"写,"+outlength);
+//                            System.out.println("读，"+length+"写,"+outlength);
                         }
 
                         //将当前位置置为0，然后设置limit为容量，也就是从0到limit（容量）这块，
@@ -130,6 +132,7 @@ public class FileUtils {
             outchannel.close();
             fos.close();
         }catch (Exception e) {
+            log.error("combineFiles error:"+e);
             e.printStackTrace();
         }finally {
             if (fos != null) {
@@ -156,6 +159,30 @@ public class FileUtils {
         }
     }
 
+    /**
+     * 递归删除目录下的所有文件及子目录下所有文件
+     * @param dir 将要删除的文件目录
+     * @return boolean Returns "true" if all deletions were successful.
+     *                 If a deletion fails, the method stops attempting to
+     *                 delete and returns "false".
+     */
+    public static boolean deleteFilesByDirectory(String directory) {
+        File dir = new File(directory) ;
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+//            递归删除目录中的子目录下
+            for (int i=0; i<children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }else{
+            log.info("not a dir");
+        }
+        // 目录此时为空，可以删除
+        return dir.delete();
+    }
     /**
      * 创建文件目录
      * @param path

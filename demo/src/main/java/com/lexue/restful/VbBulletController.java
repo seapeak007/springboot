@@ -69,8 +69,9 @@ public class VbBulletController {
 
     @RequestMapping(value = "/bullet", method = RequestMethod.GET)
     public String  genBullet(@RequestParam int video_id){
-        log.info("I am here");
+
         long filetimes = System.currentTimeMillis() /1000 ;
+        log.info("genBullet start:"+new Date()+",filetimes:"+filetimes);
         ArrayList<HashMap> vilist = new ArrayList<HashMap>() ;//整个文件包含几个分片文件
         int ibytelen =0 ;
         int mbytelen = 0;
@@ -79,6 +80,7 @@ public class VbBulletController {
         String indextemp = filePath+video_id+"/"+video_id+"index.temp" ;
         String metatemp = filePath+video_id+"/"+video_id+"meta.temp" ;
 
+        FileUtils.deleteFilesByDirectory(filePath+video_id+"/");
         FileUtils.createDirectories(filePath+video_id+"/","rwxr-x---");
 
         int dataCount = this.vbBulletService.queryVbBulletsCountByVideoid(filetimes,video_id) ;
@@ -204,6 +206,7 @@ public class VbBulletController {
         String indexfile = filePath +video_id+"/" +video_id+".index" ;
         FileUtils.writeToFile(ih.bulid(),indexfile) ;
 
+        log.info("genBullet end:"+new Date());
         return "over" ;
 
 
