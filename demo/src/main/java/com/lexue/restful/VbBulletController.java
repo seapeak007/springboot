@@ -98,11 +98,11 @@ public class VbBulletController {
                     mh.setVid(video_id);
                     mh.setVer(ver);
                     mh.setTimestamp(filetimes);
-                    mh.setIndex_offset(48);//header的长度
-                    mh.setIndex_length(ibytelen);
+                    mh.setIndex_offset(Long.valueOf("48"));//header的长度
+                    mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
                     mh.setIndex_record_length(metaIndexlen);
-                    mh.setData_offset(48+ibytelen);
-                    mh.setData_length(mbytelen);
+                    mh.setData_offset(Long.valueOf(String.valueOf(48+ibytelen)));
+                    mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
                     FileUtils.writeToFile(mh.bulid(),headtemp) ;
@@ -166,11 +166,11 @@ public class VbBulletController {
                     mh.setVid(video_id);
                     mh.setVer(ver);
                     mh.setTimestamp(filetimes);
-                    mh.setIndex_offset(48);//header的长度
-                    mh.setIndex_length(ibytelen);
+                    mh.setIndex_offset(Long.valueOf("48"));//header的长度
+                    mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
                     mh.setIndex_record_length(metaIndexlen);
-                    mh.setData_offset(48+ibytelen);
-                    mh.setData_length(mbytelen);
+                    mh.setData_offset(Long.valueOf(String.valueOf(48+ibytelen)));
+                    mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
                     FileUtils.writeToFile(mh.bulid(),headtemp) ;
