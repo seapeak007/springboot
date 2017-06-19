@@ -143,7 +143,9 @@ public class FileUtils {
                 }
             }
         }
-        return  md.digest() ;
+        byte[] b = md.digest() ;
+        log.info("==md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
+        return  b ;
     }
 
     /**

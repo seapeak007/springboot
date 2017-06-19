@@ -157,7 +157,7 @@ public class VbBulletController {
 
             }
 
-            if(j==dealCount-1){ //最后一次查询，剩余数据写入meta文件，写Index总索引文件
+            if(j==dealCount-1 & pl.getContent().size() >0){ //最后一次查询，剩余数据写入meta文件，写Index总索引文件
                 int size = pl.getContent().size() ;
                 long lastoffset = pl.getContent().get(size-1).getTimestamp() ;
                 if(ibytelen >0){
