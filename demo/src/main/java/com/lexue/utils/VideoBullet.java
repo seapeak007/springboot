@@ -31,15 +31,57 @@ public class VideoBullet {
 
         //读取文件
         byte[] bs =readFromFile("D:/avideos/1/1_7.meta",2048);
-        byte[] temp = new byte[8] ;
-        System.arraycopy(bs,24,temp,0,8);
+
         log.info(""+BytesUtils.convertBytesToInt(bs,0));
         log.info(""+BytesUtils.convertBytesToInt(bs,4));
         log.info(""+BytesUtils.convertBytesToLong(bs,8));
         log.info(""+BytesUtils.convertBytesToLong(bs,16));
         log.info(""+BytesUtils.convertBytesToLong(bs,24));
-        log.info("index length:"+BytesUtils.convertBytesToLong(temp,0));
+        log.info(""+BytesUtils.convertBytesToInt(bs,32));
+        log.info(""+BytesUtils.convertBytesToLong(bs,36));
+        log.info(""+BytesUtils.convertBytesToLong(bs,44));
+        log.info(""+BytesUtils.convertBytesToInt(bs,52));
+        log.info("header read end");
+        log.info(""+BytesUtils.convertBytesToLong(bs,56));
+        log.info(""+BytesUtils.convertBytesToLong(bs,64));
+        log.info(""+BytesUtils.convertBytesToLong(bs,72));
+        log.info(""+BytesUtils.convertBytesToShort(bs,80));
+        log.info("index one read end");
+        log.info(""+BytesUtils.convertBytesToLong(bs,290));
+        log.info(""+BytesUtils.convertBytesToInt(bs,298));
 
+        Long temp = Long.MAX_VALUE;
+        log.info("max long:"+temp);
+        FileUtils.writeToFile(BytesUtils.convertLongToBytes(temp),"d:/long.meta",true) ;
+
+        FileOutputStream fos = null;
+        File file = new File("d:/avideos/1/1.index") ;
+        byte[] bytes = BytesUtils.convertIntToBytes(9) ;
+        int rtn =0 ;
+        try {
+            fos = new FileOutputStream(file,true);
+            FileChannel fc = fos.getChannel();
+
+            ByteBuffer bbf = ByteBuffer.wrap(bytes);
+            bbf.put(bytes) ;
+            bbf.flip();
+            fc.write(bbf,300) ;
+
+            fc.close();
+            fos.flush();
+            fos.close();
+        }catch (IOException e) {
+            rtn = 1 ;
+            e.printStackTrace();
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**

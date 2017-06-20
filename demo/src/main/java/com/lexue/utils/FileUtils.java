@@ -13,6 +13,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -25,30 +26,32 @@ import static org.apache.catalina.startup.ExpandWar.deleteDir;
 public class FileUtils {
 
     /**
-     * 该方法仅支持小文件写入
-     * @param bytes  字节数组
-     * @param filename  为绝对路径+文件名
-     * @return 是否正确写入
+     *该方法仅支持最终文件大小小于512KB的文件写入
+     * @param bytes
+     * @param filename
+     * @param appendable  是否追加写入文件
+     * @return
      */
-    public static int writeToFile(byte[] bytes,String filename){
+    public static int writeToFile(byte[] bytes,String filename,boolean appendable){
         File file = new File(filename) ;
-        if(!file.exists()){
-            createFile(filename,"rwxr-x---") ;
-        }
-        FileOutputStream fos = null;
-        int rtn =0 ;
-        try {
+            if(!file.exists()){
+                createFile(filename,"rwxr-x---") ;
+            }
+            FileOutputStream fos = null;
+            int rtn =0 ;
+            try {
 
-            fos = new FileOutputStream(file);
-            FileChannel fc = fos.getChannel();
+                fos = new FileOutputStream(file,appendable);
+                FileChannel fc = fos.getChannel();
 
-            ByteBuffer bbf = ByteBuffer.wrap(bytes);
-            bbf.put(bytes) ;
-            bbf.flip();
-            fc.write(bbf) ;
+                ByteBuffer bbf = ByteBuffer.wrap(bytes);
+                bbf.put(bytes) ;
+                bbf.flip();
+                fc.write(bbf) ;
 
-            fc.close();
-            fos.close();
+                fc.close();
+                fos.flush();
+                fos.close();
         }catch (IOException e) {
             rtn = 1 ;
             e.printStackTrace();
@@ -82,14 +85,13 @@ public class FileUtils {
             md = MessageDigest.getInstance("MD5");
             fos = new FileOutputStream(combfile);
             FileChannel outchannel = fos.getChannel();
+            int capacity = 1024;// 字节
 
             for(String infile : fileArray){
                 FileInputStream fin = null;
                 try {
                     fin = new FileInputStream(new File(infile));
                     FileChannel channel = fin.getChannel();
-
-                    int capacity = 1024;// 字节
                     ByteBuffer bf = ByteBuffer.allocate(capacity);
 //                    System.out.println("限制是：" + bf.limit() + "容量是：" + bf.capacity()+ "位置是：" + bf.position());
                     int length = -1;
@@ -102,7 +104,7 @@ public class FileUtils {
 
                         int outlength =0;
                         while((outlength=outchannel.write(bf)) != 0){
-//                            System.out.println("读，"+length+"写,"+outlength);
+                            log.info("读，"+length+"写,"+outlength);
                         }
 
                         //将当前位置置为0，然后设置limit为容量，也就是从0到limit（容量）这块，
@@ -130,6 +132,7 @@ public class FileUtils {
 
             }
             outchannel.close();
+            fos.flush();
             fos.close();
         }catch (Exception e) {
             log.error("combineFiles error:"+e);
@@ -147,6 +150,44 @@ public class FileUtils {
         log.info("==md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
         return  b ;
     }
+
+//    public static byte[] combineFiles(ArrayList<String> fileArray,String combinefile){
+//        MessageDigest md =null ;
+//        File combfile = new File(combinefile) ;
+//        if(!combfile.exists()){
+//            createFile(combinefile,"rwxr-x---") ;
+//        }
+//
+//        try{
+//            md = MessageDigest.getInstance("MD5");
+//
+//            FileChannel mFileChannel = new FileOutputStream(combfile).getChannel();
+//            FileChannel inFileChannel;
+//
+//            for(String infile : fileArray){
+//                File fin = new File(infile) ;
+//                inFileChannel = new FileInputStream(fin).getChannel();
+//                inFileChannel.transferTo(0, inFileChannel.size(),
+//                        mFileChannel);
+//
+//                inFileChannel.close();
+//
+//            }
+//            mFileChannel.close();
+//        }catch (IOException  e) {
+//            log.error("combineFiles error:"+e);
+//            e.printStackTrace();
+//        }catch(NoSuchAlgorithmException e){
+//            log.error("combineFiles md5 error:"+e);
+//            e.printStackTrace();
+//        }
+//
+//        byte[] b = md.digest() ;
+//        log.info("==md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
+//        return  b ;
+//    }
+
+
 
     /**
      * 删除list中绝对路径的file文件

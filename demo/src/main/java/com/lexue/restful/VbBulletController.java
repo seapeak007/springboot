@@ -105,8 +105,8 @@ public class VbBulletController {
                     mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
-                    FileUtils.writeToFile(mh.bulid(),headtemp) ;
-                    log.info(ibytelen+"||"+mbytelen);
+                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
+                    log.info("合并记录长度ibytelen||mbytelen："+ibytelen+"||"+mbytelen);
 
 
                     //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
@@ -145,15 +145,15 @@ public class VbBulletController {
                 index.setUser_role(Short.valueOf("1"));//请求用户接口，然后赋值，待开发
 
                 byte[] indexbyte = index.bulid() ;
+                FileUtils.writeToFile(indexbyte,indextemp,true) ;
                 ibytelen = ibytelen + indexbyte.length ;
-                FileUtils.writeToFile(indexbyte,indextemp) ;
 
                 if(metaSet.contains(data.getMeta_id())){
                     log.info("meta 已存在");
                 }else{
                     byte[] metabyte = data.bulid() ;
+                    FileUtils.writeToFile(metabyte,metatemp,true) ;
                     mbytelen = mbytelen + metabyte.length ;
-                    FileUtils.writeToFile(metabyte,metatemp) ;
                 }
 
             }
@@ -174,7 +174,7 @@ public class VbBulletController {
                     mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
-                    FileUtils.writeToFile(mh.bulid(),headtemp) ;
+                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
                     log.info(ibytelen+"||"+mbytelen);
 
                     //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
@@ -206,7 +206,7 @@ public class VbBulletController {
         ih.setCount(vilist.size());
         ih.setDatas(vilist);
         String indexfile = filePath +video_id+"/" +video_id+".index" ;
-        FileUtils.writeToFile(ih.bulid(),indexfile) ;
+        FileUtils.writeToFile(ih.bulid(),indexfile,true) ;
 
         log.info("genBullet end:"+new Date());
         return "over" ;
