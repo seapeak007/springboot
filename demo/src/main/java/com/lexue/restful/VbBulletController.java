@@ -67,6 +67,12 @@ public class VbBulletController {
         return "hello world " ;
     }
 
+    @RequestMapping(value="/livebullet",method =RequestMethod.GET )
+    public String  livebullet(){
+        vbBulletService.genLiveBullets();
+        return  "hello world" ;
+    }
+
     @RequestMapping(value = "/bullet", method = RequestMethod.GET)
     public String  genBullet(@RequestParam int video_id){
 
@@ -213,5 +219,7 @@ public class VbBulletController {
 
 
     }
+
+
 
 }
