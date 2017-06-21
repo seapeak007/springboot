@@ -3,6 +3,8 @@ package com.lexue.utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystems;
@@ -305,5 +307,49 @@ public class FileUtils {
         }
     }
 
+    public static  boolean downloadzip(String urlstr ,String topath ,String name){
+        File dir = new File(topath) ;
+        if (!dir.isDirectory()) {
+            createDirectories(topath,"");
+        }
+
+        int bytesum = 0;
+        int byteread = 0;
+        InputStream inStream=null;
+        FileOutputStream fs =null;
+        try {
+            URL url = new URL(urlstr);
+            URLConnection conn = url.openConnection();
+            inStream = conn.getInputStream();
+            fs = new FileOutputStream(topath+name);
+            byte[] buffer = new byte[4028];
+            while ((byteread = inStream.read(buffer)) != -1) {
+                bytesum += byteread;
+                fs.write(buffer, 0, byteread);
+            }
+            log.info("down success");
+        } catch (Exception e) {
+            log.error("down error:"+e);
+            return false;
+        } finally{
+            try {
+                if(inStream!=null){
+                    inStream.close();
+                }
+            } catch (IOException e) {
+                inStream=null;
+                log.error("IOException error:"+e);
+            }
+            try {
+                if(fs!=null){
+                    fs.close();
+                }
+            } catch (IOException e) {
+                fs=null;
+                log.error("out IOException error:"+e);
+            }
+        }
+        return true ;
+    }
 
 }

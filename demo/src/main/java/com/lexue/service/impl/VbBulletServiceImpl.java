@@ -6,6 +6,7 @@ import com.lexue.domain.VbBullet;
 import com.lexue.repository.VbIndexRepository;
 import com.lexue.service.VbBulletService;
 import com.lexue.utils.DateUtils;
+import com.lexue.utils.FileUtils;
 import com.lexue.utils.SHA1Util;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,9 +22,13 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by UI03 on 2017/6/15.
@@ -41,6 +46,8 @@ public class VbBulletServiceImpl implements VbBulletService {
     private String bulletfile ;
     @Value("${rongyun.msg.url}")
     private String rymsgurl ;
+    @Value("${bullet.rongyun.zip.path}")
+    private String zippath ;
 
     private final VbIndexRepository vbIndexRepository ;
     @Autowired
@@ -74,9 +81,14 @@ public class VbBulletServiceImpl implements VbBulletService {
         private String date;
     }
 
+    /**
+     * 定时生成直播弹幕
+      */
     public void genLiveBullets(){
 
-        String datastr = DateUtils.getDateFormat(new Date(),"yyyyMMddHH") ;
+        Long dealtime =System.currentTimeMillis()/1000 -3600*2 ; //处理前2个小时的一个小时内数据
+        Date dealDate = new Date(Long.valueOf(String.valueOf(dealtime)+"000")) ;
+        String datastr = DateUtils.getDateFormat(dealDate,"yyyyMMddHH") ;
         String params = "date="+datastr ;
         Gson gson = new Gson();
         try{
@@ -94,25 +106,88 @@ public class VbBulletServiceImpl implements VbBulletService {
             headers.add("Timestamp",timestamp);
             headers.add("Signature",signature);
 
-//            JsonObject jsonObj = gson.fromJson(params,JsonObject.class) ;
             HttpEntity<String> formEntity = new HttpEntity<String>(params, headers);
             RyMsgHisRtn rymsg = restTemplate.postForObject(rymsgurl, formEntity, RyMsgHisRtn.class);
-            if(null!=rymsg && "200".equals(rymsg.getCode())){
+
+            if(null!=rymsg && 200==rymsg.getCode()){
                 if(null==rymsg.getUrl() || "".equals(rymsg.getUrl())){
                     log.info("this date have no value,data:"+datastr) ;
                 }else{
                     //zip下载以及处理
+                    String zipurl =rymsg.getUrl() ;
+                    log.info("zipurl:"+zipurl);
+                    boolean downFlag=false ;
+                    for(int i=0;i<3;i++){
+                        if(FileUtils.downloadzip(zipurl,zippath,datastr+".zip") ){
+                            downFlag = true ;
+                            break ;
+                        }
+                    }
+                    if(downFlag){
+                        try{
+                            ZipFile zf = new ZipFile(zippath+datastr+".zip");
+                            InputStream in = new BufferedInputStream(new FileInputStream(zippath+datastr+".zip"));
+                            ZipInputStream zin = new ZipInputStream(in);
+                            ZipEntry ze;
+                            while ((ze = zin.getNextEntry()) != null) {
+                                if (ze.isDirectory()) {
+                                } else {
+                                    log.info("file - " + ze.getName() + " : "+ ze.getSize() + " bytes");
+                                    long size = ze.getSize();
+                                    if (size > 0) {
+                                        BufferedReader br = new BufferedReader(
+                                                new InputStreamReader(zf.getInputStream(ze)));
+                                        String line;
+                                        while ((line = br.readLine()) != null) {
+//                                            log.info("line:"+line);
+//                                            String chattime = line.substring(0,19) ;//2017/06/17 22:00:04
+                                            Date cdate = DateUtils.formatDate(line.substring(0,19),"yyyy/MM/dd HH:mm:ss") ;
+                                            String chatstamp = String.valueOf(cdate.getTime()/1000 );
 
+                                            String value = line.substring(19);
+                                            log.info("value:"+value);
+                                            JsonObject jsonObj = gson.fromJson(value,JsonObject.class) ;
+                                            if("RC:TxtMsg".equals(jsonObj.get("classname").getAsString())){
+                                                log.info("聊天信息");
+                                                String content = jsonObj.get("content").getAsJsonObject().get("content").getAsString() ;
+                                                addLiveBullets(jsonObj.get("fromUserId").getAsInt() , jsonObj.get("targetId").getAsInt() , content ,
+                                                                    Integer.valueOf(chatstamp) ,jsonObj.get("targetType").getAsInt()  ) ;
+                                            }
+                                        }
+                                        br.close();
+                                    }
+                                }
+                            }
+                            zin.closeEntry();
+                            in.close();
+                            zin.close();
+                            zf.close();
+                        }catch (IOException e){
+                            log.error("read from local zip error:"+e);
+                        }
 
-
+                    }else{
+                        log.error("down from rongyun fail");
+                    }
                 }
-                log.info("rymsg:"+rymsg);
             }else{
                log.error("genLiveBullets live error:"+rymsg);
             }
         }catch (Exception e ){
             log.error("genLiveBullets live error:"+e);
         }
+
+    }
+
+    /**
+     * 直播弹幕入库
+     * @param uid
+     * @param liveroom
+     * @param content
+     * @param chat_time
+     * @param msg_type
+     */
+    private void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ){
 
     }
 }
