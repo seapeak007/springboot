@@ -34,4 +34,9 @@ public interface VbIndexRepository extends JpaRepository<VbIndex,Long> {
             " where i.indexId=u.indexId and i.metaId= m.metaId and m.display=0 and i.createTime <?1 and m.createTime<?1 and u.createTime < ?1 " +
             " and i.videoId=?2  ")
     int queryVbBulletsCountByVideoid(@Param("create_time") long create_time ,@Param("video_id") int videoId) ;
+
+    @Query(value = "select  f from VbIndex f where f.videoId =?1 and f.timestamp = ?2 and f.metaId= ?3")
+    VbIndex queryIndexByVideoTimeMeta(@Param("video_id") int videoId ,@Param("timestamp") long timestamp ,@Param("metaId") long metaId) ;
+
+
 }

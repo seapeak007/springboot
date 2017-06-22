@@ -1,6 +1,7 @@
 package com.lexue.service;
 
 import com.lexue.domain.VbBullet;
+import com.lexue.http.CommonResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,4 +16,7 @@ public interface VbBulletService {
     int queryVbBulletsCountByVideoid(long timestamp , int video_id ) ;
 
     void genLiveBullets() ;
+
+    CommonResponse genVideoBullet(int uid,int video_id,int chat_time ,String content ,int msg_type) ;
+
 }

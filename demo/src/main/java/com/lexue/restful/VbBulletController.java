@@ -6,10 +6,11 @@ import com.lexue.beans.MetaHeader;
 import com.lexue.beans.MetaIndex;
 import com.lexue.common.PageUtils;
 import com.lexue.domain.VbBullet;
-import com.lexue.service.VbBulletService;
-import com.lexue.service.VbIndexService;
-import com.lexue.service.VbMetaService;
-import com.lexue.service.VbUserService;
+import com.lexue.exception.LoginInOtherPlaceException;
+import com.lexue.exception.SessionErrorException;
+import com.lexue.http.CommonResponse;
+import com.lexue.http.HTTPUtils;
+import com.lexue.service.*;
 import com.lexue.utils.BytesUtils;
 import com.lexue.utils.FileUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.AbstractJsonpResponseBodyAdvice;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -36,6 +38,8 @@ public class VbBulletController {
     private final VbMetaService vbMetaService ;
     private final VbUserService vbUserService ;
     private final VbBulletService  vbBulletService ;
+    @Autowired
+    private AuthenticationService authenticationService ;
 
     @Value("${bullet.file.bytelen}")
     private int bftlen ;
@@ -52,6 +56,12 @@ public class VbBulletController {
     @Value("${bullet.query.pagesize}")
     private int pagesize ;
 
+    @ControllerAdvice
+    public class JsonpAdvice extends AbstractJsonpResponseBodyAdvice {
+        public JsonpAdvice() {
+            super("callback");
+        }
+    }
 
     @Autowired
     public VbBulletController(VbIndexService vbIndexService, VbMetaService vbMetaService, VbUserService vbUserService,VbBulletService vbBulletService){
@@ -73,6 +83,27 @@ public class VbBulletController {
         return  "hello world" ;
     }
 
+    @RequestMapping(value = "videobullet" ,method = RequestMethod.GET)
+    public CommonResponse videobullet(HttpServletRequest httpServletRequest, @RequestParam(value = "sid" ,required = true) String sid,
+                                      @RequestParam(value = "video_id",required = true) int video_id ,@RequestParam(value = "chat_time",required = true) int chat_time ,
+                                      @RequestParam(value="content",required = true) String content){
+        CommonResponse resp =null;
+        String did = HTTPUtils.parserHeader(httpServletRequest).get("did");
+//        try{
+//            long uid = authenticationService.checkSession(sid,did) ;
+            long uid =22222 ;
+            resp = vbBulletService.genVideoBullet(Integer.valueOf(String.valueOf(uid)),video_id,chat_time,content,4) ;
+
+//        }catch (SessionErrorException e){
+//            log.error("videobullet error:"+e.getMessage());
+//            resp = new CommonResponse(1001,e.getMessage()) ;
+//        }catch (LoginInOtherPlaceException e){
+//            log.error("videobullet error:"+e.getMessage());
+//            resp = new CommonResponse(1002,e.getMessage()) ;
+//        }
+
+        return resp ;
+    }
     @RequestMapping(value = "/bullet", method = RequestMethod.GET)
     public String  genBullet(@RequestParam int video_id){
 
