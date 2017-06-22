@@ -13,6 +13,7 @@ import javax.persistence.*;
 public class VbIndex {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "index_id")
     private long indexId ;
     @Column(name = "video_id")

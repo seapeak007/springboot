@@ -12,6 +12,7 @@ import javax.persistence.*;
 @Table(name="vbmeta")
 public class VbMeta {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "meta_id")
     private long metaId ;
     private String content ;

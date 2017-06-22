@@ -12,6 +12,7 @@ import javax.persistence.*;
 @Table(name="vbuser")
 public class VbUser {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="user_id")
     private long userId ;
     private long timestamp ;
