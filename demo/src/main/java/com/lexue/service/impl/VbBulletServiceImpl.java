@@ -215,67 +215,72 @@ public class VbBulletServiceImpl implements VbBulletService {
      * @param msg_type
      */
     private void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ){
-        try{
-            Live live = queryLiveByRoom(liveroom) ;
-            if(live !=null){
-                VbMeta meta = vbMetaRepository.queryByContent(content) ;
-                long time = System.currentTimeMillis()/1000 ;
-                if(null==meta){
-                    log.info("new meta content");
-                    meta = new VbMeta() ;
-                    meta.setContent(content);
-                    meta.setContentType(Short.valueOf(String.valueOf(msg_type)));
-                    meta.setCount(Long.valueOf("1"));
-                    meta.setCreateTime(time);
-                    meta.setDisplay(Short.valueOf("0"));
-                }else{
-                    log.info("meta content exist");
-                    meta.setCount(meta.getCount()+1);
-                    meta.setUpdateTime(time);
-                }
-                meta = vbMetaRepository.save(meta) ;
-                long metaId = meta.getMetaId() ;
-                int timestamp = chat_time - live.getStartTime() ;
-                int offset =  timestamp <0 ? 0:timestamp;
-                int indextime = (offset/vacuateTime)*vacuateTime;
-                int videoId = live.getVideoId() ;
-                VbIndex index = vbIndexRepository.queryIndexByVideoTimeMeta(videoId,Long.valueOf(String.valueOf(indextime)),metaId) ;
-                boolean idxexist = false ;
-                if(null==index){
-                    log.info("new index");
-                    index = new VbIndex();
-                    index.setCreateTime(time);
-                    index.setMetaId(metaId);
-                    index.setTimestamp(Long.valueOf(String.valueOf(indextime)));
-                    index.setVideoId(videoId);
-                    index = vbIndexRepository.save(index) ;
-                }else {
-                    log.info("index exist");
-                    idxexist=true ;
-                }
+        if(!("".equals(content) || liveroom <1)){
+            try{
+                Live live = queryLiveByRoom(liveroom) ;
+                if(live !=null){
+                    VbMeta meta = vbMetaRepository.queryByContent(content) ;
+                    long time = System.currentTimeMillis()/1000 ;
+                    if(null==meta){
+                        log.info("new meta content");
+                        meta = new VbMeta() ;
+                        meta.setContent(content);
+                        meta.setContentType(Short.valueOf(String.valueOf(msg_type)));
+                        meta.setCount(Long.valueOf("1"));
+                        meta.setCreateTime(time);
+                        meta.setDisplay(Short.valueOf("0"));
+                    }else{
+                        log.info("meta content exist");
+                        meta.setCount(meta.getCount()+1);
+                        meta.setUpdateTime(time);
+                    }
+                    meta = vbMetaRepository.save(meta) ;
+                    long metaId = meta.getMetaId() ;
+                    int timestamp = chat_time - live.getStartTime() ;
+                    int offset =  timestamp <0 ? 0:timestamp;
+                    int indextime = (offset/vacuateTime)*vacuateTime;
+                    int videoId = live.getVideoId() ;
+                    VbIndex index = vbIndexRepository.queryIndexByVideoTimeMeta(videoId,Long.valueOf(String.valueOf(indextime)),metaId) ;
+                    boolean idxexist = false ;
+                    if(null==index){
+                        log.info("new index");
+                        index = new VbIndex();
+                        index.setCreateTime(time);
+                        index.setMetaId(metaId);
+                        index.setTimestamp(Long.valueOf(String.valueOf(indextime)));
+                        index.setVideoId(videoId);
+                        index = vbIndexRepository.save(index) ;
+                    }else {
+                        log.info("index exist");
+                        idxexist=true ;
+                    }
 
-                if(vacuateFlag & idxexist){
-                    log.info("index vacuate ignore user message");
-                }else{
-                    log.info("index vacuate not ignore user message");
-                    VbUser user = new VbUser();
-                    user.setCreateTime(time);
-                    user.setIndexId(index.getIndexId());
-                    user.setTimestamp(timestamp);
-                    user.setUid(uid);
-                    user.setVideoId(videoId);
-                    vbUserRepository.save(user) ;
-                }
+                    if(vacuateFlag & idxexist){
+                        log.info("index vacuate ignore user message");
+                    }else{
+                        log.info("index vacuate not ignore user message");
+                        VbUser user = new VbUser();
+                        user.setCreateTime(time);
+                        user.setIndexId(index.getIndexId());
+                        user.setTimestamp(timestamp);
+                        user.setUid(uid);
+                        user.setVideoId(videoId);
+                        vbUserRepository.save(user) ;
+                    }
 
-                VbConfig vc = vbConfigRepository.findOne(videoId) ;
-                if(vc==null || "0".equals(vc.getUpdateStatus())){
-                    updateConfig(videoId) ;
+                    VbConfig vc = vbConfigRepository.findOne(videoId) ;
+                    if(vc==null || "0".equals(vc.getUpdateStatus())){
+                        updateConfig(videoId) ;
+                    }
+                }else{
+                    log.info("not query live by liveroom:"+liveroom);
                 }
-            }else{
-                log.info("not query live by liveroom:"+liveroom);
+            }catch (Exception e){
+                log.error("addLiveBullets error:"+e);
             }
-        }catch (Exception e){
-            log.error("addLiveBullets error:"+e);
+
+        }else{
+            log.info("信息不完整，忽略该信息content："+content);
         }
 
     }
@@ -290,60 +295,64 @@ public class VbBulletServiceImpl implements VbBulletService {
      */
     public CommonResponse genVideoBullet(int uid, int videoId, int chat_time , String content ,int msg_type){
         CommonResponse crp = null ;
-        try{
-                VbMeta meta = vbMetaRepository.queryByContent(content) ;
-                long time = System.currentTimeMillis()/1000 ;
-                if(null==meta){
-                    log.info("new meta content");
-                    meta = new VbMeta() ;
-                    meta.setContent(content);
-                    meta.setContentType(Short.valueOf(String.valueOf(msg_type)));
-                    meta.setCount(Long.valueOf("1"));
-                    meta.setCreateTime(time);
-                    meta.setDisplay(Short.valueOf("0"));
-                }else{
-                    log.info("meta content exist");
-                    meta.setCount(meta.getCount()+1);
-                    meta.setUpdateTime(time);
-                }
-                meta = vbMetaRepository.save(meta) ;
-                long metaId = meta.getMetaId() ;
-                int offset =  chat_time <0 ? 0:chat_time;
-                int indextime = (offset/vacuateTime)*vacuateTime;
-                VbIndex index = vbIndexRepository.queryIndexByVideoTimeMeta(videoId,Long.valueOf(String.valueOf(indextime)),metaId) ;
-                boolean idxexist = false ;
-                if(null==index){
-                    log.info("new index");
-                    index = new VbIndex();
-                    index.setCreateTime(time);
-                    index.setMetaId(metaId);
-                    index.setTimestamp(Long.valueOf(String.valueOf(indextime)));
-                    index.setVideoId(videoId);
-                    index = vbIndexRepository.save(index) ;
-                }else {
-                    log.info("index exist");
-                    idxexist=true ;
-                }
+        if(!("".equals(content) || videoId <1)){
+            try{
+                    VbMeta meta = vbMetaRepository.queryByContent(content) ;
+                    long time = System.currentTimeMillis()/1000 ;
+                    if(null==meta){
+                        log.info("new meta content");
+                        meta = new VbMeta() ;
+                        meta.setContent(content);
+                        meta.setContentType(Short.valueOf(String.valueOf(msg_type)));
+                        meta.setCount(Long.valueOf("1"));
+                        meta.setCreateTime(time);
+                        meta.setDisplay(Short.valueOf("0"));
+                    }else{
+                        log.info("meta content exist");
+                        meta.setCount(meta.getCount()+1);
+                        meta.setUpdateTime(time);
+                    }
+                    meta = vbMetaRepository.save(meta) ;
+                    long metaId = meta.getMetaId() ;
+                    int offset =  chat_time <0 ? 0:chat_time;
+                    int indextime = (offset/vacuateTime)*vacuateTime;
+                    VbIndex index = vbIndexRepository.queryIndexByVideoTimeMeta(videoId,Long.valueOf(String.valueOf(indextime)),metaId) ;
+                    boolean idxexist = false ;
+                    if(null==index){
+                        log.info("new index");
+                        index = new VbIndex();
+                        index.setCreateTime(time);
+                        index.setMetaId(metaId);
+                        index.setTimestamp(Long.valueOf(String.valueOf(indextime)));
+                        index.setVideoId(videoId);
+                        index = vbIndexRepository.save(index) ;
+                    }else {
+                        log.info("index exist");
+                        idxexist=true ;
+                    }
 
-                if(vacuateFlag & idxexist){
-                    log.info("index vacuate ignore user message");
-                }else{
-                    log.info("index vacuate not ignore user message");
-                    VbUser user = new VbUser();
-                    user.setCreateTime(time);
-                    user.setIndexId(index.getIndexId());
-                    user.setTimestamp(chat_time);
-                    user.setUid(uid);
-                    user.setVideoId(videoId);
-                    vbUserRepository.save(user) ;
-                }
+                    if(vacuateFlag & idxexist){
+                        log.info("index vacuate ignore user message");
+                    }else{
+                        log.info("index vacuate not ignore user message");
+                        VbUser user = new VbUser();
+                        user.setCreateTime(time);
+                        user.setIndexId(index.getIndexId());
+                        user.setTimestamp(chat_time);
+                        user.setUid(uid);
+                        user.setVideoId(videoId);
+                        vbUserRepository.save(user) ;
+                    }
 
-            updateConfig(videoId)  ;
+                updateConfig(videoId)  ;
 
-            crp = new CommonResponse(1000,"success") ;
-        }catch (Exception e){
-            log.error("addLiveBullets error:"+e);
-            crp = new CommonResponse(1003,e.getMessage()) ;
+                crp = new CommonResponse(1000,"success") ;
+            }catch (Exception e){
+                log.error("addLiveBullets error:"+e);
+                crp = new CommonResponse(1003,e.getMessage()) ;
+            }
+        }else{
+            log.info("信息不完整，忽略该信息content："+content);
         }
         return crp ;
     }
