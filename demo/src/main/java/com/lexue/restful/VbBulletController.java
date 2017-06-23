@@ -83,7 +83,7 @@ public class VbBulletController {
         return  "hello world" ;
     }
 
-    @RequestMapping(value = "videobullet" ,method = RequestMethod.GET)
+    @RequestMapping(value = "/videobullet" ,method = RequestMethod.GET)
     public CommonResponse videobullet(HttpServletRequest httpServletRequest, @RequestParam(value = "sid" ,required = true) String sid,
                                       @RequestParam(value = "video_id",required = true) int video_id ,@RequestParam(value = "chat_time",required = true) int chat_time ,
                                       @RequestParam(value="content",required = true) String content){
@@ -122,6 +122,10 @@ public class VbBulletController {
 
         int dataCount = this.vbBulletService.queryVbBulletsCountByVideoid(filetimes,video_id) ;
         int dealCount = dataCount /pagesize +2 ;
+        if(pagesize*(dataCount /pagesize) ==dataCount){
+            log.info("页数整除的情况");
+            dealCount = dealCount -1 ;
+        }
 
         for(int j=1;j<dealCount ;j++){
             PageRequest p = PageUtils.buildPageRequest(j,pagesize,"");
@@ -251,6 +255,11 @@ public class VbBulletController {
 
     }
 
+    @RequestMapping(value = "/addzip",method = RequestMethod.GET)
+    public String addLocalZip(@RequestParam String filename){
+        vbBulletService.addLocalZip(filename);
+        return "hello world" ;
+    }
 
 
 }

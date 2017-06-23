@@ -31,10 +31,6 @@ public class Live {
     private int startTime;
     @Column(name = "live_end")
     private int endTime;
-    @Column(name = "left_head")
-    private int leftHead;
-    @Column(name = "total_head")
-    private int totalHead;
     @Column(name = "live_subject_id")
     private int subjectId;
     @Column(name = "live_subject_name")
@@ -47,10 +43,6 @@ public class Live {
     private int teacherId;
     @Column(name = "live_chat_room")
     private int roomId;
-    @Column(name = "has_bought")
-    private boolean hasBought;
-    @Column(name = "live_time_left")
-    private long timeLeft;
     @Column(name = "video_id")
     private int videoId;
     @Column(name = "video_name")

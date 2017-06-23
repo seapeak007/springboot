@@ -106,7 +106,6 @@ public class VbBulletServiceImpl implements VbBulletService {
         Long dealtime =System.currentTimeMillis()/1000 -3600*2 ; //处理前2个小时的一个小时内数据
         Date dealDate = new Date(Long.valueOf(String.valueOf(dealtime)+"000")) ;
         String datastr = DateUtils.getDateFormat(dealDate,"yyyyMMddHH") ;
-        datastr ="2017062121" ;
         String params = "date="+datastr ;
         Gson gson = new Gson();
         try{
@@ -370,5 +369,51 @@ public class VbBulletServiceImpl implements VbBulletService {
             vc.setUpdateTime(time);
         }
         vbConfigRepository.save(vc) ;
+    }
+
+    public void addLocalZip(String filename){
+        Gson gson = new Gson() ;
+        try{
+            ZipFile zf = new ZipFile(zippath+filename+".zip");
+            InputStream in = new BufferedInputStream(new FileInputStream(zippath+filename+".zip"));
+            ZipInputStream zin = new ZipInputStream(in);
+            ZipEntry ze;
+            while ((ze = zin.getNextEntry()) != null) {
+                if (ze.isDirectory()) {
+                } else {
+                    log.info("file - " + ze.getName() + " : "+ ze.getSize() + " bytes");
+                    long size = ze.getSize();
+                    if (size > 0) {
+                        BufferedReader br = new BufferedReader(
+                                new InputStreamReader(zf.getInputStream(ze)));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+//                                            log.info("line:"+line);
+//                                            String chattime = line.substring(0,19) ;//2017/06/17 22:00:04
+                            Date cdate = DateUtils.formatDate(line.substring(0,19),"yyyy/MM/dd HH:mm:ss") ;
+                            String chatstamp = String.valueOf(cdate.getTime()/1000 );
+
+                            String value = line.substring(19);
+                            log.info("value:"+value);
+                            JsonObject jsonObj = gson.fromJson(value,JsonObject.class) ;
+                            if("RC:TxtMsg".equals(jsonObj.get("classname").getAsString())){
+                                log.info("聊天信息");
+                                String content = jsonObj.get("content").getAsJsonObject().get("content").getAsString() ;
+                                addLiveBullets(jsonObj.get("fromUserId").getAsInt() , jsonObj.get("targetId").getAsInt() , content ,
+                                        Integer.valueOf(chatstamp) ,jsonObj.get("targetType").getAsInt()  ) ;
+                            }
+                        }
+                        br.close();
+                    }
+                }
+            }
+            zin.closeEntry();
+            in.close();
+            zin.close();
+            zf.close();
+        }catch (IOException e){
+            log.error("read from local zip error:"+e);
+        }
+        log.info("over");
     }
 }
