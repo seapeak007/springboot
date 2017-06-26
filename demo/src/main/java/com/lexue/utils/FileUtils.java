@@ -352,4 +352,32 @@ public class FileUtils {
         return true ;
     }
 
+    /**
+     * 删除directory下除了exclude外的所有子文件夹
+     * @param directory
+     * @param exclude
+     * @return
+     */
+    public static boolean delFilesExcludeParam(String directory ,String exclude) {
+        File dir = new File(directory) ;
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i=0; i<children.length; i++) {
+                if(!children[i].contains(exclude)){
+                    File f = new File(dir,children[i]) ;
+                    if(f.isDirectory()){
+                        deleteFilesByDirectory(dir+"/"+children[i]) ;
+                    }
+                }
+            }
+        }else{
+            log.info("not a dir");
+        }
+        return true;
+    }
+
+    public static  void main(String args[]){
+        delFilesExcludeParam("D:/avideos/1/" , "123456789") ;
+    }
+
 }

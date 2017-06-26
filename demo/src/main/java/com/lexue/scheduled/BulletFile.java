@@ -9,6 +9,7 @@ import com.lexue.config.CacheConfig;
 import com.lexue.domain.UserRole;
 import com.lexue.domain.VbBullet;
 import com.lexue.domain.VbConfig;
+import com.lexue.repository.VbConfigRepository;
 import com.lexue.service.UserRoleService;
 import com.lexue.service.VbBulletService;
 import com.lexue.service.VbConfigService;
@@ -40,6 +41,8 @@ public class BulletFile {
     private VbConfigService vbConfigService ;
     @Autowired
     private UserRoleService userRoleService ;
+    @Autowired
+    private VbConfigRepository vbConfigRepository ;
 
     @Value("${lexue.client}")
     private String client ;
@@ -83,12 +86,12 @@ public class BulletFile {
         int ibytelen =0 ;
         int mbytelen = 0;
         Set metaSet = new HashSet() ;
-        String headtemp = filePath+video_id+"/"+video_id+"header.temp" ;
-        String indextemp = filePath+video_id+"/"+video_id+"index.temp" ;
-        String metatemp = filePath+video_id+"/"+video_id+"meta.temp" ;
+        String headtemp = filePath+video_id+"/"+filetimes+"/"+video_id+"header.temp" ;
+        String indextemp = filePath+video_id+"/"+filetimes+"/"+video_id+"index.temp" ;
+        String metatemp = filePath+video_id+"/"+filetimes+"/"+video_id+"meta.temp" ;
 
-        FileUtils.deleteFilesByDirectory(filePath+video_id+"/");
-        FileUtils.createDirectories(filePath+video_id+"/","rwxr-x---");
+//        FileUtils.deleteFilesByDirectory(filePath+video_id+"/");
+        FileUtils.createDirectories(filePath+video_id+"/"+filetimes+"/","rwxr-x---");
 
         int dataCount = this.vbBulletService.queryVbBulletsCountByVideoid(filetimes,video_id) ;
         int dealCount = dataCount /pagesize +2 ;
@@ -125,7 +128,7 @@ public class BulletFile {
                     fileArray.add(headtemp) ;
                     fileArray.add(indextemp) ;
                     fileArray.add(metatemp) ;
-                    String comfile = filePath +video_id+"/" +video_id+"_"+b.getTimestamp()+".meta" ;
+                    String comfile = filePath +video_id+"/"+filetimes+"/" +video_id+"_"+b.getTimestamp()+".meta" ;
 
                     HashMap m = new HashMap() ;
                     m.put("offset",b.getTimestamp()) ;
@@ -194,7 +197,7 @@ public class BulletFile {
                     fileArray.add(headtemp) ;
                     fileArray.add(indextemp) ;
                     fileArray.add(metatemp) ;
-                    String comfile = filePath +video_id+"/" +video_id+"_"+lastoffset+".meta" ;
+                    String comfile = filePath +video_id+"/"+filetimes+"/" +video_id+"_"+lastoffset+".meta" ;
 
                     HashMap m = new HashMap() ;
                     m.put("offset",lastoffset) ;
@@ -220,6 +223,9 @@ public class BulletFile {
         String indexfile = filePath +video_id+"/" +video_id+".index" ;
         FileUtils.writeToFile(ih.bulid(),indexfile,true) ;
 
+        //删除上一次产生的meta文件，即子文件夹
+        FileUtils.delFilesExcludeParam(filePath+video_id+"/",String.valueOf(filetimes));
+        updateConfig(video_id) ;
         log.info("gen video bullet end:"+video_id+"="+new Date());
     }
 
@@ -236,5 +242,24 @@ public class BulletFile {
         }else{
             return Short.valueOf(String.valueOf(ul.getRole())) ;
         }
+    }
+
+    /**
+     * 修改配置表
+     * @param videoId
+     */
+    private void updateConfig(int videoId){
+        VbConfig vc = vbConfigRepository.findOne(videoId) ;
+        long time = System.currentTimeMillis()/1000 ;
+        if(null==vc){
+            log.info("error config data");
+        }else{
+//            log.info("update video config");
+            vc.setUpdateStatus(0);
+            vc.setVersion(vc.getVersion()+1);
+            vc.setUpdateTime(time);
+        }
+        vbConfigRepository.save(vc) ;
+//        log.info("updateConfig end:"+new Date());
     }
 }

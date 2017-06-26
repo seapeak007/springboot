@@ -125,7 +125,7 @@ public class BulletLive {
                             while ((ze = zin.getNextEntry()) != null) {
                                 if (ze.isDirectory()) {
                                 } else {
-                                    log.info("file - " + ze.getName() + " : "+ ze.getSize() + " bytes");
+                                    log.info("file:" + ze.getName() + "=="+ ze.getSize() + " bytes");
                                     long size = ze.getSize();
                                     if (size > 0) {
                                         BufferedReader br = new BufferedReader(
@@ -180,6 +180,7 @@ public class BulletLive {
      * @param msg_type
      */
     public void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ){
+        log.info("addLiveBullets start:"+new Date());
         if(!("".equals(content) || liveroom <1)){
             try{
                 Live live = queryLiveByRoom(liveroom) ;
@@ -247,6 +248,7 @@ public class BulletLive {
         }else{
             log.info("信息不完整，忽略该信息content："+content);
         }
+        log.info("addLiveBullets end:"+new Date());
 
     }
 
@@ -282,5 +284,6 @@ public class BulletLive {
             vc.setUpdateTime(time);
         }
         vbConfigRepository.save(vc) ;
+        log.info("updateConfig end:"+new Date());
     }
 }
