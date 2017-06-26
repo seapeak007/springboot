@@ -220,11 +220,12 @@ public class VbBulletController {
                 ibytelen = ibytelen + indexbyte.length ;
 
                 if(metaSet.contains(data.getMeta_id())){
-                    log.info("meta 已存在");
+//                    log.info("meta 已存在");
                 }else{
                     byte[] metabyte = data.bulid() ;
                     FileUtils.writeToFile(metabyte,metatemp,true) ;
                     mbytelen = mbytelen + metabyte.length ;
+                    metaSet.add(data.getMeta_id()) ;
                 }
 
             }
@@ -296,6 +297,10 @@ public class VbBulletController {
         return "hello world" ;
     }
 
+    /**
+     * 不同数据库之间导入数据
+     * @return
+     */
     @RequestMapping(value = "/dealdata" ,method = RequestMethod.GET)
     public String dealData(){
         Gson gson = new Gson();

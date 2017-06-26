@@ -87,7 +87,7 @@ public class FileUtils {
             md = MessageDigest.getInstance("MD5");
             fos = new FileOutputStream(combfile);
             FileChannel outchannel = fos.getChannel();
-            int capacity = 1024;// 字节
+            int capacity = 10240;// 字节
 
             for(String infile : fileArray){
                 FileInputStream fin = null;
