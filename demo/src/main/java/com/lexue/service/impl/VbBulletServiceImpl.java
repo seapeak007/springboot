@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.lexue.config.CacheConfig;
 import com.lexue.domain.*;
+import com.lexue.domainscd.Livez;
 import com.lexue.http.CommonResponse;
 import com.lexue.repository.*;
+import com.lexue.repositoryscd.LivezRepository;
 import com.lexue.service.VbBulletService;
 import com.lexue.utils.DateUtils;
 import com.lexue.utils.FileUtils;
@@ -67,6 +69,8 @@ public class VbBulletServiceImpl implements VbBulletService {
     private VbUserRepository vbUserRepository ;
     @Autowired
     private VbConfigRepository vbConfigRepository ;
+    @Autowired
+    private LivezRepository livezRepository;
     @Autowired
     private final RestTemplate restTemplate;
 
@@ -201,11 +205,28 @@ public class VbBulletServiceImpl implements VbBulletService {
      * @param liveroom
      * @return
      */
+//    @Cacheable(CacheConfig.LIVE_ROOM)
+//    private Live queryLiveByRoom(int liveroom){
+//        log.info("go repository");
+//        return liveRepository.queryLiveByRoom(liveroom) ;
+//    }
+
+    /**
+     * repositoryscd数据库，导数据时使用
+     * @param liveroom
+     * @return
+     */
     @Cacheable(CacheConfig.LIVE_ROOM)
     private Live queryLiveByRoom(int liveroom){
         log.info("go repository");
-        return liveRepository.queryLiveByRoom(liveroom) ;
+        Livez lz = livezRepository.queryLivezByRoom(liveroom) ;
+        Live l = new Live() ;
+        l.setVideoId(lz.getVideoId());
+        l.setRoomId(lz.getRoomId());
+        l.setStartTime(lz.getStartTime());
+        return l ;
     }
+
     /**
      * 直播弹幕入库
      * @param uid
@@ -214,7 +235,7 @@ public class VbBulletServiceImpl implements VbBulletService {
      * @param chat_time
      * @param msg_type
      */
-    private void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ){
+    public void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ){
         if(!("".equals(content) || liveroom <1)){
             try{
                 Live live = queryLiveByRoom(liveroom) ;

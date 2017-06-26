@@ -17,6 +17,8 @@ public interface VbBulletService {
 
     void genLiveBullets() ;
 
+    void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ) ;
+
     CommonResponse genVideoBullet(int uid,int video_id,int chat_time ,String content ,int msg_type) ;
     void addLocalZip(String filename) ;
 }

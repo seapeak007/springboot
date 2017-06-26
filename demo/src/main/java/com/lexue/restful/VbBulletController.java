@@ -1,11 +1,19 @@
 package com.lexue.restful;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import com.lexue.beans.IndexHeader;
 import com.lexue.beans.MetaData;
 import com.lexue.beans.MetaHeader;
 import com.lexue.beans.MetaIndex;
 import com.lexue.common.PageUtils;
 import com.lexue.domain.VbBullet;
+import com.lexue.domainscd.ChatHistory;
+import com.lexue.domainscd.ChatHistoryVideo;
 import com.lexue.exception.LoginInOtherPlaceException;
 import com.lexue.exception.SessionErrorException;
 import com.lexue.http.CommonResponse;
@@ -24,6 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.AbstractJsonpRespon
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpServletRequest;
+import java.io.StringReader;
 import java.util.*;
 
 /**
@@ -40,6 +49,8 @@ public class VbBulletController {
     private final VbBulletService  vbBulletService ;
     @Autowired
     private AuthenticationService authenticationService ;
+    @Autowired
+    private ChatService chatService ;
 
     @Value("${bullet.file.bytelen}")
     private int bftlen ;
@@ -77,12 +88,25 @@ public class VbBulletController {
         return "hello world " ;
     }
 
+    /**
+     * 直播弹幕入库
+     * @return
+     */
     @RequestMapping(value="/livebullet",method =RequestMethod.GET )
     public String  livebullet(){
         vbBulletService.genLiveBullets();
         return  "hello world" ;
     }
 
+    /**
+     * 录播弹幕入库
+     * @param httpServletRequest
+     * @param sid
+     * @param video_id
+     * @param chat_time
+     * @param content
+     * @return
+     */
     @RequestMapping(value = "/videobullet" ,method = RequestMethod.GET)
     public CommonResponse videobullet(HttpServletRequest httpServletRequest, @RequestParam(value = "sid" ,required = true) String sid,
                                       @RequestParam(value = "video_id",required = true) int video_id ,@RequestParam(value = "chat_time",required = true) int chat_time ,
@@ -104,6 +128,12 @@ public class VbBulletController {
 
         return resp ;
     }
+
+    /**
+     * 生成弹幕文件
+     * @param video_id
+     * @return
+     */
     @RequestMapping(value = "/bullet", method = RequestMethod.GET)
     public String  genBullet(@RequestParam int video_id){
 
@@ -255,10 +285,67 @@ public class VbBulletController {
 
     }
 
+    /**
+     * 本地zip文件入库
+     * @param filename
+     * @return
+     */
     @RequestMapping(value = "/addzip",method = RequestMethod.GET)
     public String addLocalZip(@RequestParam String filename){
         vbBulletService.addLocalZip(filename);
         return "hello world" ;
+    }
+
+    @RequestMapping(value = "/dealdata" ,method = RequestMethod.GET)
+    public String dealData(){
+        Gson gson = new Gson();
+        long cCount = chatService.queryChatCount() ;
+        long cvCount = chatService.queryChatVideoCount() ;
+        log.info(cCount+"||"+cvCount);
+//        List<ChatHistoryVideo> cvlist = chatService.queryAllChatVideos() ;
+//        for(ChatHistoryVideo cv :cvlist){
+//            try{
+//                JsonReader jsonReader = new JsonReader(new StringReader(cv.getMessage()));//其中jsonContext为String类型的Json数据
+//                jsonReader.setLenient(true) ;
+//                JsonObject mj = gson.fromJson(jsonReader, JsonObject.class) ;
+//                vbBulletService.genVideoBullet(cv.getUser_id(),cv.getVideo_id(),cv.getChat_time(),mj.get("content").getAsString(),cv.getMsg_type()) ;
+//            }catch (Exception e){
+//                log.warn("ignore video content:"+cv.getMessage()+"==="+e);
+//                continue;
+//            }
+//        }
+//        log.info("deal video chat over ");
+
+
+        int dealCount = Integer.valueOf(String.valueOf(cCount)) /1000 +2 ;
+
+        for(int j=1;j<dealCount ;j++) {
+            PageRequest p = PageUtils.buildPageRequest(j, 1000, "");
+            Page<ChatHistory> pl = this.chatService.queryChatsByPage(p);
+            for(ChatHistory c :pl.getContent()){
+                try{
+//                    JsonReader jsonReader = new JsonReader(new StringReader(c.getMessage()));//其中jsonContext为String类型的Json数据
+//                    jsonReader.setLenient(true);
+//                    JsonObject mj = gson.fromJson(jsonReader,JsonObject.class) ;
+//                    JSONObject mj = JSON.parseObject(c.getMessage()) ;
+                    if(c.getMessage().length() <10){
+                        continue;
+                    }
+                    String t = c.getMessage().split(",")[0].split("\"")[3] ;
+
+                    vbBulletService.addLiveBullets(c.getUser_id(),c.getRoom_id(),t,c.getChat_time(),c.getMsg_type());
+                }catch (Exception e){
+                    log.warn("ignore live content:"+c.getMessage()+"==="+e);
+                    continue;
+                }
+
+            }
+
+        }
+
+        log.info("deal live chat over ");
+
+        return "deal data" ;
     }
 
 

@@ -17,16 +17,13 @@ public class MetaIndex {
 
 
     public byte[] bulid(){
-        if(this.timestamp >0){
+
             byte[] rtn = new byte[8+8+8+2] ;
             System.arraycopy(BytesUtils.convertLongToBytes(this.timestamp),0,rtn,0,8);
             System.arraycopy(BytesUtils.convertLongToBytes(this.meta_id),0,rtn,8,8);
             System.arraycopy(BytesUtils.convertLongToBytes(this.user_id),0,rtn,16,8);
             System.arraycopy(BytesUtils.convertShortToBytes(this.user_role),0,rtn,24,2);
             return rtn ;
-        }else{
-            return null ;
-        }
 
     }
 
