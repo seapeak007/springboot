@@ -89,16 +89,6 @@ public class VbBulletController {
     }
 
     /**
-     * 直播弹幕入库
-     * @return
-     */
-    @RequestMapping(value="/livebullet",method =RequestMethod.GET )
-    public String  livebullet(){
-        vbBulletService.genLiveBullets();
-        return  "hello world" ;
-    }
-
-    /**
      * 录播弹幕入库
      * @param httpServletRequest
      * @param sid
@@ -129,179 +119,190 @@ public class VbBulletController {
         return resp ;
     }
 
+
+    /**
+     * 直播弹幕入库
+     * @return
+     */
+//    @RequestMapping(value="/livebullet",method =RequestMethod.GET )
+//    public String  livebullet(){
+//        vbBulletService.genLiveBullets();
+//        return  "hello world" ;
+//    }
+
     /**
      * 生成弹幕文件
      * @param video_id
      * @return
      */
-    @RequestMapping(value = "/bullet", method = RequestMethod.GET)
-    public String  genBullet(@RequestParam int video_id){
+//    @RequestMapping(value = "/bullet", method = RequestMethod.GET)
+//    public String  genBullet(@RequestParam int video_id){
+//
+//        long filetimes = System.currentTimeMillis() /1000 ;
+//        log.info("genBullet start:"+new Date()+",filetimes:"+filetimes);
+//        ArrayList<HashMap> vilist = new ArrayList<HashMap>() ;//整个文件包含几个分片文件
+//        int ibytelen =0 ;
+//        int mbytelen = 0;
+//        Set metaSet = new HashSet() ;
+//        String headtemp = filePath+video_id+"/"+video_id+"header.temp" ;
+//        String indextemp = filePath+video_id+"/"+video_id+"index.temp" ;
+//        String metatemp = filePath+video_id+"/"+video_id+"meta.temp" ;
+//
+//        FileUtils.deleteFilesByDirectory(filePath+video_id+"/");
+//        FileUtils.createDirectories(filePath+video_id+"/","rwxr-x---");
+//
+//        int dataCount = this.vbBulletService.queryVbBulletsCountByVideoid(filetimes,video_id) ;
+//        int dealCount = dataCount /pagesize +2 ;
+//        if(pagesize*(dataCount /pagesize) ==dataCount){
+//            log.info("页数整除的情况");
+//            dealCount = dealCount -1 ;
+//        }
+//
+//        for(int j=1;j<dealCount ;j++){
+//            PageRequest p = PageUtils.buildPageRequest(j,pagesize,"");
+//            Page<VbBullet> pl = this.vbBulletService.queryVbBulletsPageByVideoid(filetimes,video_id,p) ;
+//
+//            for(VbBullet b:pl.getContent()){
+//                if(ibytelen+mbytelen > bftlen){
+//
+//                    //写入MetaHeader文件
+//                    MetaHeader mh = new MetaHeader() ;
+//                    mh.setVid(video_id);
+//                    mh.setVer(ver);
+//                    mh.setTimestamp(filetimes);
+//                    mh.setIndex_offset(Long.valueOf("56"));//header的长度
+//                    mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
+//                    mh.setIndex_record_length(metaIndexlen);
+//                    mh.setData_offset(Long.valueOf(String.valueOf(56+ibytelen)));
+//                    mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
+//                    mh.setData_record_length(metaDatalen);
+//
+//                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
+//                    log.info("合并记录长度ibytelen||mbytelen："+ibytelen+"||"+mbytelen);
+//
+//
+//                    //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
+//                    ArrayList<String> fileArray = new ArrayList<String>() ;
+//                    fileArray.add(headtemp) ;
+//                    fileArray.add(indextemp) ;
+//                    fileArray.add(metatemp) ;
+//                    String comfile = filePath +video_id+"/" +video_id+"_"+b.getTimestamp()+".meta" ;
+//
+//                    HashMap m = new HashMap() ;
+//                    m.put("offset",b.getTimestamp()) ;
+//                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
+//
+//                    vilist.add(m) ;
+//
+//                    //删除temp临时文件
+//                    FileUtils.deleteFiles(fileArray) ;
+//
+//                    //初始新文件的写
+//                    ibytelen =0 ;
+//                    mbytelen = 0;
+//                    metaSet = new HashSet() ;
+//
+//                }
+//
+//                MetaData data = new MetaData() ;
+//                data.setMeta_id(b.getMetaId());
+//                String content = b.getContent() ;
+//                data.setMeta_body(BytesUtils.convertStringToBytes(content));
+//                data.setMeta_length(BytesUtils.convertStringToBytes(content).length);
+//
+//                MetaIndex index = new MetaIndex() ;
+//                index.setMeta_id(b.getMetaId());
+//                index.setTimestamp(b.getTimestamp());
+//                index.setUser_id(b.getUserId());
+//                index.setUser_role(Short.valueOf("1"));//请求用户接口，然后赋值，待开发
+//
+//                byte[] indexbyte = index.bulid() ;
+//                FileUtils.writeToFile(indexbyte,indextemp,true) ;
+//                ibytelen = ibytelen + indexbyte.length ;
+//
+//                if(metaSet.contains(data.getMeta_id())){
+////                    log.info("meta 已存在");
+//                }else{
+//                    byte[] metabyte = data.bulid() ;
+//                    FileUtils.writeToFile(metabyte,metatemp,true) ;
+//                    mbytelen = mbytelen + metabyte.length ;
+//                    metaSet.add(data.getMeta_id()) ;
+//                }
+//
+//            }
+//
+//            if(j==dealCount-1 & pl.getContent().size() >0){ //最后一次查询，剩余数据写入meta文件，写Index总索引文件
+//                int size = pl.getContent().size() ;
+//                long lastoffset = pl.getContent().get(size-1).getTimestamp() ;
+//                if(ibytelen >0){
+//                    //写入MetaHeader文件
+//                    MetaHeader mh = new MetaHeader() ;
+//                    mh.setVid(video_id);
+//                    mh.setVer(ver);
+//                    mh.setTimestamp(filetimes);
+//                    mh.setIndex_offset(Long.valueOf("56"));//header的长度
+//                    mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
+//                    mh.setIndex_record_length(metaIndexlen);
+//                    mh.setData_offset(Long.valueOf(String.valueOf(56+ibytelen)));
+//                    mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
+//                    mh.setData_record_length(metaDatalen);
+//
+//                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
+//                    log.info(ibytelen+"||"+mbytelen);
+//
+//                    //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
+//                    ArrayList<String> fileArray = new ArrayList<String>() ;
+//                    fileArray.add(headtemp) ;
+//                    fileArray.add(indextemp) ;
+//                    fileArray.add(metatemp) ;
+//                    String comfile = filePath +video_id+"/" +video_id+"_"+lastoffset+".meta" ;
+//
+//                    HashMap m = new HashMap() ;
+//                    m.put("offset",lastoffset) ;
+//                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
+//
+//                    vilist.add(m) ;
+//
+//                    //删除temp临时文件
+//                    FileUtils.deleteFiles(fileArray) ;
+//                }
+//
+//            }
+//        }
+//
+//        //写总index文件
+//        IndexHeader ih = new IndexHeader() ;
+//        ih.setVid(video_id);
+//        ih.setVer(ver);
+//        ih.setIndex_record_length(indexRecordlen);
+//        ih.setTimestamp(filetimes);
+//        ih.setCount(vilist.size());
+//        ih.setDatas(vilist);
+//        String indexfile = filePath +video_id+"/" +video_id+".index" ;
+//        FileUtils.writeToFile(ih.bulid(),indexfile,true) ;
 
-        long filetimes = System.currentTimeMillis() /1000 ;
-        log.info("genBullet start:"+new Date()+",filetimes:"+filetimes);
-        ArrayList<HashMap> vilist = new ArrayList<HashMap>() ;//整个文件包含几个分片文件
-        int ibytelen =0 ;
-        int mbytelen = 0;
-        Set metaSet = new HashSet() ;
-        String headtemp = filePath+video_id+"/"+video_id+"header.temp" ;
-        String indextemp = filePath+video_id+"/"+video_id+"index.temp" ;
-        String metatemp = filePath+video_id+"/"+video_id+"meta.temp" ;
-
-        FileUtils.deleteFilesByDirectory(filePath+video_id+"/");
-        FileUtils.createDirectories(filePath+video_id+"/","rwxr-x---");
-
-        int dataCount = this.vbBulletService.queryVbBulletsCountByVideoid(filetimes,video_id) ;
-        int dealCount = dataCount /pagesize +2 ;
-        if(pagesize*(dataCount /pagesize) ==dataCount){
-            log.info("页数整除的情况");
-            dealCount = dealCount -1 ;
-        }
-
-        for(int j=1;j<dealCount ;j++){
-            PageRequest p = PageUtils.buildPageRequest(j,pagesize,"");
-            Page<VbBullet> pl = this.vbBulletService.queryVbBulletsPageByVideoid(filetimes,video_id,p) ;
-
-            for(VbBullet b:pl.getContent()){
-                if(ibytelen+mbytelen > bftlen){
-
-                    //写入MetaHeader文件
-                    MetaHeader mh = new MetaHeader() ;
-                    mh.setVid(video_id);
-                    mh.setVer(ver);
-                    mh.setTimestamp(filetimes);
-                    mh.setIndex_offset(Long.valueOf("56"));//header的长度
-                    mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
-                    mh.setIndex_record_length(metaIndexlen);
-                    mh.setData_offset(Long.valueOf(String.valueOf(56+ibytelen)));
-                    mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
-                    mh.setData_record_length(metaDatalen);
-
-                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
-                    log.info("合并记录长度ibytelen||mbytelen："+ibytelen+"||"+mbytelen);
-
-
-                    //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
-                    ArrayList<String> fileArray = new ArrayList<String>() ;
-                    fileArray.add(headtemp) ;
-                    fileArray.add(indextemp) ;
-                    fileArray.add(metatemp) ;
-                    String comfile = filePath +video_id+"/" +video_id+"_"+b.getTimestamp()+".meta" ;
-
-                    HashMap m = new HashMap() ;
-                    m.put("offset",b.getTimestamp()) ;
-                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
-
-                    vilist.add(m) ;
-
-                    //删除temp临时文件
-                    FileUtils.deleteFiles(fileArray) ;
-
-                    //初始新文件的写
-                    ibytelen =0 ;
-                    mbytelen = 0;
-                    metaSet = new HashSet() ;
-
-                }
-
-                MetaData data = new MetaData() ;
-                data.setMeta_id(b.getMetaId());
-                String content = b.getContent() ;
-                data.setMeta_body(BytesUtils.convertStringToBytes(content));
-                data.setMeta_length(BytesUtils.convertStringToBytes(content).length);
-
-                MetaIndex index = new MetaIndex() ;
-                index.setMeta_id(b.getMetaId());
-                index.setTimestamp(b.getTimestamp());
-                index.setUser_id(b.getUserId());
-                index.setUser_role(Short.valueOf("1"));//请求用户接口，然后赋值，待开发
-
-                byte[] indexbyte = index.bulid() ;
-                FileUtils.writeToFile(indexbyte,indextemp,true) ;
-                ibytelen = ibytelen + indexbyte.length ;
-
-                if(metaSet.contains(data.getMeta_id())){
-//                    log.info("meta 已存在");
-                }else{
-                    byte[] metabyte = data.bulid() ;
-                    FileUtils.writeToFile(metabyte,metatemp,true) ;
-                    mbytelen = mbytelen + metabyte.length ;
-                    metaSet.add(data.getMeta_id()) ;
-                }
-
-            }
-
-            if(j==dealCount-1 & pl.getContent().size() >0){ //最后一次查询，剩余数据写入meta文件，写Index总索引文件
-                int size = pl.getContent().size() ;
-                long lastoffset = pl.getContent().get(size-1).getTimestamp() ;
-                if(ibytelen >0){
-                    //写入MetaHeader文件
-                    MetaHeader mh = new MetaHeader() ;
-                    mh.setVid(video_id);
-                    mh.setVer(ver);
-                    mh.setTimestamp(filetimes);
-                    mh.setIndex_offset(Long.valueOf("56"));//header的长度
-                    mh.setIndex_length(Long.valueOf(String.valueOf(ibytelen)));
-                    mh.setIndex_record_length(metaIndexlen);
-                    mh.setData_offset(Long.valueOf(String.valueOf(56+ibytelen)));
-                    mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
-                    mh.setData_record_length(metaDatalen);
-
-                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
-                    log.info(ibytelen+"||"+mbytelen);
-
-                    //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
-                    ArrayList<String> fileArray = new ArrayList<String>() ;
-                    fileArray.add(headtemp) ;
-                    fileArray.add(indextemp) ;
-                    fileArray.add(metatemp) ;
-                    String comfile = filePath +video_id+"/" +video_id+"_"+lastoffset+".meta" ;
-
-                    HashMap m = new HashMap() ;
-                    m.put("offset",lastoffset) ;
-                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
-
-                    vilist.add(m) ;
-
-                    //删除temp临时文件
-                    FileUtils.deleteFiles(fileArray) ;
-                }
-
-            }
-        }
-
-        //写总index文件
-        IndexHeader ih = new IndexHeader() ;
-        ih.setVid(video_id);
-        ih.setVer(ver);
-        ih.setIndex_record_length(indexRecordlen);
-        ih.setTimestamp(filetimes);
-        ih.setCount(vilist.size());
-        ih.setDatas(vilist);
-        String indexfile = filePath +video_id+"/" +video_id+".index" ;
-        FileUtils.writeToFile(ih.bulid(),indexfile,true) ;
-
-        log.info("genBullet end:"+new Date());
-        return "over" ;
-
-
-    }
+//        log.info("genBullet end:"+new Date());
+//        return "over" ;
+//
+//
+//    }
 
     /**
      * 本地zip文件入库
      * @param filename
      * @return
      */
-    @RequestMapping(value = "/addzip",method = RequestMethod.GET)
-    public String addLocalZip(@RequestParam String filename){
-        vbBulletService.addLocalZip(filename);
-        return "hello world" ;
-    }
+//    @RequestMapping(value = "/addzip",method = RequestMethod.GET)
+//    public String addLocalZip(@RequestParam String filename){
+//        vbBulletService.addLocalZip(filename);
+//        return "hello world" ;
+//    }
 
     /**
      * 不同数据库之间导入数据
      * @return
      */
-    @RequestMapping(value = "/dealdata" ,method = RequestMethod.GET)
+/*    @RequestMapping(value = "/dealdata" ,method = RequestMethod.GET)
     public String dealData(){
         Gson gson = new Gson();
         long cCount = chatService.queryChatCount() ;
@@ -351,7 +352,7 @@ public class VbBulletController {
         log.info("deal live chat over ");
 
         return "deal data" ;
-    }
+    }*/
 
 
 }

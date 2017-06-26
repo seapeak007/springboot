@@ -15,10 +15,10 @@ public interface VbBulletService {
     Page<VbBullet> queryVbBulletsPageByVideoid(long timestamp , int video_id , Pageable pageable) ;
     int queryVbBulletsCountByVideoid(long timestamp , int video_id ) ;
 
-    void genLiveBullets() ;
+//    void genLiveBullets() ;
 
-    void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ) ;
+//    void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ) ;
 
     CommonResponse genVideoBullet(int uid,int video_id,int chat_time ,String content ,int msg_type) ;
-    void addLocalZip(String filename) ;
+//    void addLocalZip(String filename) ;
 }

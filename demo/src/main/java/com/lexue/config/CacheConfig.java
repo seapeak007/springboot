@@ -18,6 +18,7 @@ public class CacheConfig {
 
     public static final String META_CACHE = "META_CACHE";
     public static final String LIVE_ROOM = "LIVE_ROOM_CACHE" ;
+    public static final String USER_ROLE = "USER_ROLE_CACHE" ;
 
     @Bean
     public Cache domainCache() {
@@ -35,4 +36,11 @@ public class CacheConfig {
                 .build()) ;
     }
 
+    @Bean
+    public Cache userRoleCache(){
+        return new GuavaCache(USER_ROLE,CacheBuilder.newBuilder()
+                .maximumSize(500)
+                .expireAfterWrite(24,TimeUnit.HOURS)
+                .build()) ;
+    }
 }
