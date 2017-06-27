@@ -3,9 +3,11 @@ package com.lexue.utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -17,6 +19,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.catalina.startup.ExpandWar.deleteDir;
@@ -76,7 +79,84 @@ public class FileUtils {
      * @param combinefile 合并目标文件
      * @return 返回目标文件的MD5 byte[]
      */
-    public static byte[] combineFiles(ArrayList<String> fileArray,String combinefile){
+//    public static byte[] combineFiles(ArrayList<String> fileArray,String combinefile){
+//        FileOutputStream fos =null ;
+//        MessageDigest md =null ;
+//        File combfile = new File(combinefile) ;
+//        if(!combfile.exists()){
+//            createFile(combinefile,"rwxr-x---") ;
+//        }
+//        try{
+//            md = MessageDigest.getInstance("MD5");
+//            fos = new FileOutputStream(combfile);
+//            FileChannel outchannel = fos.getChannel();
+//            int capacity = 10240;// 字节
+//
+//            for(String infile : fileArray){
+//                FileInputStream fin = null;
+//                try {
+//                    fin = new FileInputStream(new File(infile));
+//                    FileChannel channel = fin.getChannel();
+//                    ByteBuffer bf = ByteBuffer.allocate(capacity);
+////                    System.out.println("限制是：" + bf.limit() + "容量是：" + bf.capacity()+ "位置是：" + bf.position());
+//                    int length = -1;
+//                    while ((length = channel.read(bf)) != -1) {
+//
+//                        //将当前位置置为limit，然后设置当前位置为0，也就是从0到limit这块，都写入到同道中
+//                        bf.flip();
+//
+//                        md.update(bf.array(),0,length);
+//
+//                        int outlength =0;
+//                        while((outlength=outchannel.write(bf)) != 0){
+//                            log.info("读，"+length+"写,"+outlength);
+//                        }
+//
+//                        //将当前位置置为0，然后设置limit为容量，也就是从0到limit（容量）这块，
+//                        //都可以利用，通道读取的数据存储到
+//                        //0到limit这块
+//                        bf.clear();
+//
+//                    }
+//                    channel.close();
+//                    fin.close();
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    if (fin != null) {
+//                        try {
+//                            fin.close();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//
+//                }
+//
+//            }
+//            outchannel.close();
+//            fos.flush();
+//            fos.close();
+//        }catch (Exception e) {
+//            log.error("combineFiles error:"+e);
+//            e.printStackTrace();
+//        }finally {
+//            if (fos != null) {
+//                try {
+//                    fos.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//        byte[] b = md.digest() ;
+//        log.info("==md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
+//        return  b ;
+//    }
+
+    public static byte[] combineBytesFiles(ArrayList<List<byte[]>> bytesArray, String combinefile){
         FileOutputStream fos =null ;
         MessageDigest md =null ;
         File combfile = new File(combinefile) ;
@@ -89,49 +169,14 @@ public class FileUtils {
             FileChannel outchannel = fos.getChannel();
             int capacity = 10240;// 字节
 
-            for(String infile : fileArray){
-                FileInputStream fin = null;
-                try {
-                    fin = new FileInputStream(new File(infile));
-                    FileChannel channel = fin.getChannel();
-                    ByteBuffer bf = ByteBuffer.allocate(capacity);
-//                    System.out.println("限制是：" + bf.limit() + "容量是：" + bf.capacity()+ "位置是：" + bf.position());
-                    int length = -1;
-                    while ((length = channel.read(bf)) != -1) {
-
-                        //将当前位置置为limit，然后设置当前位置为0，也就是从0到limit这块，都写入到同道中
-                        bf.flip();
-
-                        md.update(bf.array(),0,length);
-
-                        int outlength =0;
-                        while((outlength=outchannel.write(bf)) != 0){
-                            log.info("读，"+length+"写,"+outlength);
-                        }
-
-                        //将当前位置置为0，然后设置limit为容量，也就是从0到limit（容量）这块，
-                        //都可以利用，通道读取的数据存储到
-                        //0到limit这块
-                        bf.clear();
-
-                    }
-                    channel.close();
-                    fin.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (fin != null) {
-                        try {
-                            fin.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
+            for(List<byte[]> list : bytesArray){
+                for(byte[] b:list){
+                    md.update(b,0,b.length);
+                    ByteBuffer bbf = ByteBuffer.wrap(b);
+                    bbf.put(b) ;
+                    bbf.flip();
+                    outchannel.write(bbf) ;
                 }
-
             }
             outchannel.close();
             fos.flush();
@@ -152,44 +197,70 @@ public class FileUtils {
         log.info("==md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
         return  b ;
     }
+    /**
+     * 复制文件的方式，合并文件
+     */
+    public static byte[] combineFiles(ArrayList<String> fileArray,String combinefile){
 
-//    public static byte[] combineFiles(ArrayList<String> fileArray,String combinefile){
-//        MessageDigest md =null ;
-//        File combfile = new File(combinefile) ;
-//        if(!combfile.exists()){
-//            createFile(combinefile,"rwxr-x---") ;
-//        }
-//
-//        try{
-//            md = MessageDigest.getInstance("MD5");
-//
-//            FileChannel mFileChannel = new FileOutputStream(combfile).getChannel();
-//            FileChannel inFileChannel;
-//
-//            for(String infile : fileArray){
-//                File fin = new File(infile) ;
-//                inFileChannel = new FileInputStream(fin).getChannel();
-//                inFileChannel.transferTo(0, inFileChannel.size(),
-//                        mFileChannel);
-//
-//                inFileChannel.close();
-//
-//            }
-//            mFileChannel.close();
-//        }catch (IOException  e) {
-//            log.error("combineFiles error:"+e);
-//            e.printStackTrace();
-//        }catch(NoSuchAlgorithmException e){
-//            log.error("combineFiles md5 error:"+e);
-//            e.printStackTrace();
-//        }
-//
-//        byte[] b = md.digest() ;
-//        log.info("==md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
-//        return  b ;
-//    }
+        File combfile = new File(combinefile) ;
+        if(!combfile.exists()){
+            createFile(combinefile,"rwxr-x---") ;
+        }
+        try{
+            FileChannel mFileChannel = new FileOutputStream(combfile).getChannel();
+            FileChannel inFileChannel;
 
+            for(String infile : fileArray){
+                File fin = new File(infile) ;
+                inFileChannel = new FileInputStream(fin).getChannel();
+                inFileChannel.transferTo(0, inFileChannel.size(),
+                        mFileChannel);
 
+                inFileChannel.close();
+            }
+            mFileChannel.close();
+        }catch (IOException  e) {
+            log.error("combineFiles error:"+e);
+            e.printStackTrace();
+        }
+
+        return getMd5ByFile(combfile) ;
+    }
+
+    /**
+     * 文件MD5值 2017年6月27日 上午12:06:37
+     */
+    public static byte[] getMd5ByFile(File file) {
+        byte[] b = null;
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(file);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+            log.error("getMd5ByFile error:"+e1);
+        }
+        try {
+            MappedByteBuffer byteBuffer = in.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update(byteBuffer);
+            b = md5.digest() ;
+            log.info("md5:"+ MD5Util.bytesToHex(b)); //二进制转16进制
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("getMd5ByFile error:"+e);
+        } finally {
+            if (null != in) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return b;
+    }
 
     /**
      * 删除list中绝对路径的file文件

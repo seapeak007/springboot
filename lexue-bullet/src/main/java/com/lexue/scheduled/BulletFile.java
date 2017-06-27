@@ -6,7 +6,6 @@ import com.lexue.beans.MetaHeader;
 import com.lexue.beans.MetaIndex;
 import com.lexue.common.PageUtils;
 import com.lexue.config.CacheConfig;
-import com.lexue.domain.UserRole;
 import com.lexue.domain.VbBullet;
 import com.lexue.domain.VbConfig;
 import com.lexue.repository.VbConfigRepository;
@@ -61,6 +60,7 @@ public class BulletFile {
     @Value("${bullet.query.pagesize}")
     private int pagesize ;
 
+    private Set<Long> teaUsers =null ;
     /**
      * 定时生成所有符合条件的video_id弹幕
      */
@@ -86,9 +86,13 @@ public class BulletFile {
         int ibytelen =0 ;
         int mbytelen = 0;
         Set metaSet = new HashSet() ;
-        String headtemp = filePath+video_id+"/"+filetimes+"/"+video_id+"header.temp" ;
-        String indextemp = filePath+video_id+"/"+filetimes+"/"+video_id+"index.temp" ;
-        String metatemp = filePath+video_id+"/"+filetimes+"/"+video_id+"meta.temp" ;
+//        String headtemp = filePath+video_id+"/"+filetimes+"/"+video_id+"header.temp" ;
+//        String indextemp = filePath+video_id+"/"+filetimes+"/"+video_id+"index.temp" ;
+//        String metatemp = filePath+video_id+"/"+filetimes+"/"+video_id+"meta.temp" ;
+        List<byte[]> headlist = new ArrayList<byte[]>() ;
+        List<byte[]> indexlist = new ArrayList<byte[]>() ;
+        List<byte[]> metalist = new ArrayList<byte[]>() ;
+
 
 //        FileUtils.deleteFilesByDirectory(filePath+video_id+"/");
         FileUtils.createDirectories(filePath+video_id+"/"+filetimes+"/","rwxr-x---");
@@ -102,8 +106,9 @@ public class BulletFile {
 
         for(int j=1;j<dealCount ;j++){
             PageRequest p = PageUtils.buildPageRequest(j,pagesize,"");
+            log.info("query db start:"+new Date());
             Page<VbBullet> pl = this.vbBulletService.queryVbBulletsPageByVideoid(filetimes,video_id,p) ;
-
+            log.info("query db end:"+new Date());
             for(VbBullet b:pl.getContent()){
                 if(ibytelen+mbytelen > bftlen){
 
@@ -119,30 +124,40 @@ public class BulletFile {
                     mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
-                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
+//                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
+                    headlist.add(mh.bulid()) ;
                     log.info("合并记录长度ibytelen||mbytelen："+ibytelen+"||"+mbytelen);
 
 
                     //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
-                    ArrayList<String> fileArray = new ArrayList<String>() ;
-                    fileArray.add(headtemp) ;
-                    fileArray.add(indextemp) ;
-                    fileArray.add(metatemp) ;
+//                    ArrayList<String> fileArray = new ArrayList<String>() ;
+//                    fileArray.add(headtemp) ;
+//                    fileArray.add(indextemp) ;
+//                    fileArray.add(metatemp) ;
+                    ArrayList<List<byte[]>> bytesArray = new ArrayList<List<byte[]>>() ;
+                    bytesArray.add(headlist) ;
+                    bytesArray.add(indexlist) ;
+                    bytesArray.add(metalist) ;
                     String comfile = filePath +video_id+"/"+filetimes+"/" +video_id+"_"+b.getTimestamp()+".meta" ;
 
                     HashMap m = new HashMap() ;
                     m.put("offset",b.getTimestamp()) ;
-                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
-
+//                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
+                    log.info("comfile start:"+new Date());
+                    m.put("mdbyte", FileUtils.combineBytesFiles(bytesArray,comfile)) ;
+                    log.info("comfile end:"+new Date());
                     vilist.add(m) ;
 
                     //删除temp临时文件
-                    FileUtils.deleteFiles(fileArray) ;
+//                    FileUtils.deleteFiles(fileArray) ;
 
                     //初始新文件的写
                     ibytelen =0 ;
                     mbytelen = 0;
                     metaSet = new HashSet() ;
+                    headlist.clear();
+                    indexlist.clear();
+                    metalist.clear();
 
                 }
 
@@ -159,14 +174,16 @@ public class BulletFile {
                 index.setUser_role(queryUserRole(b.getUserId()));//请求用户接口
 
                 byte[] indexbyte = index.bulid() ;
-                FileUtils.writeToFile(indexbyte,indextemp,true) ;
+//                FileUtils.writeToFile(indexbyte,indextemp,true) ;
+                indexlist.add(indexbyte) ;
                 ibytelen = ibytelen + indexbyte.length ;
 
                 if(metaSet.contains(data.getMeta_id())){
 //                    log.info("meta 已存在");
                 }else{
                     byte[] metabyte = data.bulid() ;
-                    FileUtils.writeToFile(metabyte,metatemp,true) ;
+//                    FileUtils.writeToFile(metabyte,metatemp,true) ;
+                    metalist.add(metabyte) ;
                     mbytelen = mbytelen + metabyte.length ;
                     metaSet.add(data.getMeta_id()) ;
                 }
@@ -189,24 +206,30 @@ public class BulletFile {
                     mh.setData_length(Long.valueOf(String.valueOf(mbytelen)));
                     mh.setData_record_length(metaDatalen);
 
-                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
-                    log.info(ibytelen+"||"+mbytelen);
+//                    FileUtils.writeToFile(mh.bulid(),headtemp,true) ;
+                    headlist.add(mh.bulid()) ;
+                    log.info("合并记录长度ibytelen||mbytelen："+ibytelen+"||"+mbytelen);
 
-                    //超过了一个文件，需要合并文件并返回文件ＭＤ５值，然后重新开始写新的文件
-                    ArrayList<String> fileArray = new ArrayList<String>() ;
-                    fileArray.add(headtemp) ;
-                    fileArray.add(indextemp) ;
-                    fileArray.add(metatemp) ;
+                    ArrayList<List<byte[]>> bytesArray = new ArrayList<List<byte[]>>() ;
+                    bytesArray.add(headlist) ;
+                    bytesArray.add(indexlist) ;
+                    bytesArray.add(metalist) ;
+
                     String comfile = filePath +video_id+"/"+filetimes+"/" +video_id+"_"+lastoffset+".meta" ;
 
                     HashMap m = new HashMap() ;
                     m.put("offset",lastoffset) ;
-                    m.put("mdbyte", FileUtils.combineFiles(fileArray,comfile)) ;
+                    m.put("mdbyte", FileUtils.combineBytesFiles(bytesArray,comfile)) ;
 
                     vilist.add(m) ;
 
                     //删除temp临时文件
-                    FileUtils.deleteFiles(fileArray) ;
+//                    FileUtils.deleteFiles(fileArray) ;
+
+                    //清空一下
+                    headlist.clear();
+                    indexlist.clear();
+                    metalist.clear();
                 }
 
             }
@@ -235,12 +258,18 @@ public class BulletFile {
      * @return
      */
     @Cacheable(CacheConfig.USER_ROLE)
+    private void queryUserMap(){
+        this.teaUsers = userRoleService.queryTeaUsers() ;
+    }
+
     private short  queryUserRole(long user_id){
-        UserRole ul= userRoleService.queryUserRole(user_id) ;
-        if(ul==null){
-            return Short.valueOf("0") ;
+        if(this.teaUsers==null){
+            queryUserMap();
+        }
+        if(this.teaUsers.contains(user_id)){
+            return Short.valueOf("1") ;
         }else{
-            return Short.valueOf(String.valueOf(ul.getRole())) ;
+            return Short.valueOf("0") ;
         }
     }
 
