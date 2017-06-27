@@ -65,7 +65,7 @@ public class BulletFile {
      * 定时生成所有符合条件的video_id弹幕
      */
     @Scheduled(cron = "${bullet.file.cron}")
-    private void genBulletFiles(){
+    public void genBulletFiles(){
         log.info("start genBulletFiles:"+new Date());
         long time = System.currentTimeMillis() /1000 ;
         List<VbConfig> vclist = vbConfigService.queryUpdateConfig(client,time) ;

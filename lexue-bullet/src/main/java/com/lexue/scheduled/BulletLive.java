@@ -78,7 +78,7 @@ public class BulletLive {
     }
 
     @Scheduled(cron = "${bullet.live.cron}")
-    private void liveBullets(){
+    public void liveBullets(){
         Long dealtime =System.currentTimeMillis()/1000 -3600*2 ; //处理前2个小时的一个小时内数据
         Date dealDate = new Date(Long.valueOf(String.valueOf(dealtime)+"000")) ;
         String datastr = DateUtils.getDateFormat(dealDate,"yyyyMMddHH") ;
