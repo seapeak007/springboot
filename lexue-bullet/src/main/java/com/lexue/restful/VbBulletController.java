@@ -97,7 +97,7 @@ public class VbBulletController {
      * @param content
      * @return
      */
-    @RequestMapping(value = "/videobullet" ,method = RequestMethod.GET)
+    @RequestMapping(value = "/bullet_screen" ,method = RequestMethod.POST)
     public CommonResponse videobullet(HttpServletRequest httpServletRequest, @RequestParam(value = "sid" ,required = true) String sid,
                                       @RequestParam(value = "video_id",required = true) int video_id ,@RequestParam(value = "chat_time",required = true) int chat_time ,
                                       @RequestParam(value="content",required = true) String content){
