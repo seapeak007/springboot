@@ -103,18 +103,18 @@ public class VbBulletController {
                                       @RequestParam(value="content",required = true) String content){
         CommonResponse resp =null;
         String did = HTTPUtils.parserHeader(httpServletRequest).get("did");
-//        try{
-//            long uid = authenticationService.checkSession(sid,did) ;
-            long uid =22222 ;
+        try{
+            long uid = authenticationService.checkSession(sid,did) ;
+//            long uid =22222 ;
             resp = vbBulletService.genVideoBullet(Integer.valueOf(String.valueOf(uid)),video_id,chat_time,content,4) ;
 
-//        }catch (SessionErrorException e){
-//            log.error("videobullet error:"+e.getMessage());
-//            resp = new CommonResponse(1001,e.getMessage()) ;
-//        }catch (LoginInOtherPlaceException e){
-//            log.error("videobullet error:"+e.getMessage());
-//            resp = new CommonResponse(1002,e.getMessage()) ;
-//        }
+        }catch (SessionErrorException e){
+            log.error("videobullet error:"+e.getMessage());
+            resp = new CommonResponse(1001,e.getMessage()) ;
+        }catch (LoginInOtherPlaceException e){
+            log.error("videobullet error:"+e.getMessage());
+            resp = new CommonResponse(1002,e.getMessage()) ;
+        }
 
         return resp ;
     }

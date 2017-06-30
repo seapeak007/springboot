@@ -22,4 +22,11 @@ public class VbBullet {
         this.timestamp = timestamp ;
         this.userId = userId ;
     }
+    public VbBullet(long metaId,String content, long indexId ,long timestamp ,int uid){
+        this.metaId =metaId ;
+        this.content = content ;
+        this.indexId = indexId ;
+        this.timestamp = timestamp ;
+        this.userId = Long.valueOf(String.valueOf(uid)) ;
+    }
 }
