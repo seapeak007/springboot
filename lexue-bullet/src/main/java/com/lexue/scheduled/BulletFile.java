@@ -244,7 +244,7 @@ public class BulletFile {
         ih.setCount(vilist.size());
         ih.setDatas(vilist);
         String indexfile = filePath +video_id+"/" +video_id+".index" ;
-        FileUtils.writeToFile(ih.bulid(),indexfile,true) ;
+        FileUtils.writeToFile(ih.bulid(),indexfile,false) ;
 
         //删除上一次产生的meta文件，即子文件夹
         FileUtils.delFilesExcludeParam(filePath+video_id+"/",String.valueOf(filetimes));
