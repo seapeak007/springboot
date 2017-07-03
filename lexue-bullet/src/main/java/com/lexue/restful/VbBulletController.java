@@ -105,7 +105,7 @@ public class VbBulletController {
         String did = HTTPUtils.parserHeader(httpServletRequest).get("did");
         try{
             long uid = authenticationService.checkSession(sid,did) ;
-//            long uid =22222 ; 
+//            long uid =22222 ;
             resp = vbBulletService.genVideoBullet(Integer.valueOf(String.valueOf(uid)),video_id,chat_time,content,4) ;
 
         }catch (SessionErrorException e){
