@@ -47,8 +47,6 @@ public class VbBulletServiceImpl implements VbBulletService {
     private String appid;
     @Value("${rongyun.app.sec}")
     private String appsec ;
-    @Value("${rongyun.bullet.file}")
-    private String bulletfile ;
     @Value("${rongyun.msg.url}")
     private String rymsgurl ;
     @Value("${bullet.rongyun.zip.path}")
