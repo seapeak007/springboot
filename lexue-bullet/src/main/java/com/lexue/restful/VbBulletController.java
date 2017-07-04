@@ -39,7 +39,7 @@ import java.util.*;
  * Created by UI03 on 2017/6/9.
  */
 @RestController
-@RequestMapping(value="/video")
+@RequestMapping(value="/videobullet/{version}")
 @Slf4j
 public class VbBulletController {
 
