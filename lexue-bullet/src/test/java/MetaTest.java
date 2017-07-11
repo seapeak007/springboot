@@ -14,7 +14,7 @@ import java.nio.channels.FileChannel;
 @Slf4j
 public class MetaTest {
     public static void main(String args[]){
-        String fileName ="D:/avideos/1945_141.meta" ;
+        String fileName ="D:/avideos/2135_356.meta" ;
         File infile = new File(fileName) ;
         FileInputStream fin = null;
         int capacity =200000 ;
@@ -29,11 +29,19 @@ public class MetaTest {
             bf.flip() ;
 
             byte[] ibytes = bf.array() ;
-            log.info(""+BytesUtils.convertBytesToInt(ibytes,0)) ;
-            log.info(""+BytesUtils.convertBytesToLong(ibytes,36)) ;
-            log.info(""+BytesUtils.convertBytesToLong(ibytes,110764)) ;
-            log.info(""+BytesUtils.convertBytesToInt(ibytes,110772)) ;
-            log.info(""+BytesUtils.convertBytesToString(ibytes,110776,6)) ;
+            log.info("vid:"+BytesUtils.convertBytesToInt(ibytes,0)) ;
+            log.info("index_offset:"+BytesUtils.convertBytesToLong(ibytes,16)) ;
+            log.info("index_length:"+BytesUtils.convertBytesToLong(ibytes,24)) ;
+            log.info("data_offset:"+BytesUtils.convertBytesToLong(ibytes,36)) ;
+            log.info("data_length:"+BytesUtils.convertBytesToLong(ibytes,44)) ;
+            int index_offset = Integer.valueOf(String.valueOf(BytesUtils.convertBytesToLong(ibytes,16))) ;
+            log.info("index-timestamp:"+BytesUtils.convertBytesToLong(ibytes,index_offset)) ;
+            log.info("index-meta_id:"+BytesUtils.convertBytesToLong(ibytes,index_offset+8)) ;
+            log.info("index-user_id:"+BytesUtils.convertBytesToLong(ibytes,index_offset+16)) ;
+            int data_offset = Integer.valueOf(String.valueOf(BytesUtils.convertBytesToLong(ibytes,36))) ;
+            log.info("data-meta_id:"+BytesUtils.convertBytesToLong(ibytes,data_offset)) ;
+            log.info("data-meta_length:"+BytesUtils.convertBytesToInt(ibytes,data_offset+8)) ;
+            log.info("data-meta_body:"+BytesUtils.convertBytesToString(ibytes,data_offset+12,BytesUtils.convertBytesToInt(ibytes,data_offset+8))) ;
 
 
             channel.close();
