@@ -124,11 +124,11 @@ public class VbBulletController {
      * 直播弹幕入库
      * @return
      */
-//    @RequestMapping(value="/livebullet",method =RequestMethod.GET )
-//    public String  livebullet(){
-//        vbBulletService.genLiveBullets();
-//        return  "hello world" ;
-//    }
+    @RequestMapping(value="/livebullet",method =RequestMethod.GET )
+    public String  livebullet(@RequestParam(value="datastr",required = true)  String datastr){
+        vbBulletService.genLiveBullets(datastr);
+        return  "hello world" ;
+    }
 
     /**
      * 生成弹幕文件

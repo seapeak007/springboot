@@ -15,7 +15,7 @@ public interface VbBulletService {
     Page<VbBullet> queryVbBulletsPageByVideoid(long timestamp , int video_id , Pageable pageable) ;
     int queryVbBulletsCountByVideoid(long timestamp , int video_id ) ;
 
-//    void genLiveBullets() ;
+    void genLiveBullets(String datastr) ;
 
 //    void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ) ;
 
