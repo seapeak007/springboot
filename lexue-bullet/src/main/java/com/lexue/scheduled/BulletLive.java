@@ -5,6 +5,10 @@ import com.google.gson.JsonObject;
 import com.lexue.config.CacheConfig;
 import com.lexue.domain.*;
 import com.lexue.repository.*;
+import com.lexue.scheduled.queue.IndexConsumer;
+import com.lexue.scheduled.queue.IndexForQueue;
+import com.lexue.scheduled.queue.IndexProducer;
+import com.lexue.service.CacheService;
 import com.lexue.utils.DateUtils;
 import com.lexue.utils.FileUtils;
 import com.lexue.utils.SHA1Util;
@@ -26,6 +30,10 @@ import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -53,10 +61,9 @@ public class BulletLive {
     @Value("${lexue.client}")
     private String client ;
 
+
     @Autowired
     private VbIndexRepository vbIndexRepository ;
-    @Autowired
-    private LiveRepository liveRepository ;
     @Autowired
     private VbMetaRepository vbMetaRepository ;
     @Autowired
@@ -65,6 +72,11 @@ public class BulletLive {
     private VbConfigRepository vbConfigRepository ;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private CacheService cacheService ;
+
+    private static BlockingQueue<IndexForQueue> metaQueue = new ArrayBlockingQueue<IndexForQueue>(100) ;
+    private static BlockingQueue<VbIndex> indexQueue = new ArrayBlockingQueue<VbIndex>(100) ;
 
     @Data
     @NoArgsConstructor
@@ -81,6 +93,7 @@ public class BulletLive {
         Long dealtime =System.currentTimeMillis()/1000 -3600*2 ; //处理前2个小时的一个小时内数据
         Date dealDate = new Date(Long.valueOf(String.valueOf(dealtime)+"000")) ;
         String datastr = DateUtils.getDateFormat(dealDate,"yyyyMMddHH") ;
+//        datastr="2017071016" ;
         String params = "date="+datastr ;
         Gson gson = new Gson();
         try{
@@ -172,6 +185,100 @@ public class BulletLive {
     }
 
     /**
+     * 直播弹幕入库 这个单线程的效率太低
+     * @param uid
+     * @param liveroom
+     * @param content
+     * @param chat_time
+     * @param msg_type
+     */
+//    public void addLiveBullets(int uid , int liveroom , String content ,int chat_time ,int msg_type ){
+//        log.info("addLiveBullets start:"+new Date());
+//        if(!("".equals(content) || liveroom <1)){
+//            try{
+//                Live live = queryLiveByRoom(liveroom) ;
+//                if(live !=null){
+//                    VbMeta meta = vbMetaRepository.queryByContent(content) ;
+//                    long time = System.currentTimeMillis()/1000 ;
+//                    if(null==meta){
+////                        log.info("new meta content");
+//                        meta = new VbMeta() ;
+//                        meta.setContent(content);
+//                        meta.setContentType(Short.valueOf(String.valueOf(msg_type)));
+//                        meta.setCount(Long.valueOf("1"));
+//                        meta.setCreateTime(time);
+//                        meta.setDisplay(Short.valueOf("0"));
+//                    }else{
+////                        log.info("meta content exist");
+//                        meta.setCount(meta.getCount()+1);
+//                        meta.setUpdateTime(time);
+//                    }
+//                    meta = vbMetaRepository.save(meta) ;
+//                    long metaId = meta.getMetaId() ;
+//                    int timestamp = chat_time - live.getStartTime() ;
+//                    int offset =  timestamp <0 ? 0:timestamp;
+//                    int indextime = (offset/vacuateTime)*vacuateTime;
+//                    int videoId = live.getVideoId() ;
+//                    VbIndex index = vbIndexRepository.queryIndexByVideoTimeMeta(videoId,Long.valueOf(String.valueOf(indextime)),metaId) ;
+//                    boolean idxexist = false ;
+//                    if(null==index){
+////                        log.info("new index");
+//                        index = new VbIndex();
+//                        index.setCreateTime(time);
+//                        index.setMetaId(metaId);
+//                        index.setTimestamp(Long.valueOf(String.valueOf(indextime)));
+//                        index.setVideoId(videoId);
+//                        index = vbIndexRepository.save(index) ;
+//                    }else {
+////                        log.info("index exist");
+//                        idxexist=true ;
+//                    }
+//
+//                    if(vacuateFlag & idxexist){
+////                        log.info("index vacuate ignore user message");
+//                    }else{
+////                        log.info("index vacuate not ignore user message");
+//                        VbUser user = new VbUser();
+//                        user.setCreateTime(time);
+//                        user.setIndexId(index.getIndexId());
+//                        user.setTimestamp(timestamp);
+//                        user.setUid(uid);
+//                        user.setVideoId(videoId);
+//                        vbUserRepository.save(user) ;
+//                    }
+//
+//                    VbConfig vc = vbConfigRepository.findOne(videoId) ;
+//                    if(vc==null || "0".equals(vc.getUpdateStatus())){
+//                        updateConfig(videoId) ;
+//                    }
+//                }else{
+//                    log.info("not query live by liveroom:"+liveroom);
+//                }
+//            }catch (Exception e){
+//                log.error("addLiveBullets error:"+e);
+//            }
+//
+//        }else{
+//            log.info("信息不完整，忽略该信息content："+content);
+//        }
+//        log.info("addLiveBullets end:"+new Date());
+//
+//    }
+    private static Thread indexpro=null ;
+    ExecutorService userservice = Executors.newFixedThreadPool(10);
+
+    /**
+     * 定时监控线程是否挂掉
+     */
+    @Scheduled(cron="0/30 * *  * * ? " )
+    private void checkThread(){
+        if(indexpro ==null || !indexpro.isAlive()){
+            indexpro = new Thread(new IndexProducer(metaQueue,indexQueue,vbIndexRepository)) ;
+            indexpro.start();
+            log.warn("indexThread new start");
+        }
+    }
+    /**
      * 直播弹幕入库
      * @param uid
      * @param liveroom
@@ -183,12 +290,11 @@ public class BulletLive {
         log.info("addLiveBullets start:"+new Date());
         if(!("".equals(content) || liveroom <1)){
             try{
-                Live live = queryLiveByRoom(liveroom) ;
+                Live live = cacheService.queryLiveByRoom(liveroom) ;
                 if(live !=null){
                     VbMeta meta = vbMetaRepository.queryByContent(content) ;
                     long time = System.currentTimeMillis()/1000 ;
                     if(null==meta){
-//                        log.info("new meta content");
                         meta = new VbMeta() ;
                         meta.setContent(content);
                         meta.setContentType(Short.valueOf(String.valueOf(msg_type)));
@@ -196,48 +302,24 @@ public class BulletLive {
                         meta.setCreateTime(time);
                         meta.setDisplay(Short.valueOf("0"));
                     }else{
-//                        log.info("meta content exist");
                         meta.setCount(meta.getCount()+1);
                         meta.setUpdateTime(time);
                     }
                     meta = vbMetaRepository.save(meta) ;
-                    long metaId = meta.getMetaId() ;
-                    int timestamp = chat_time - live.getStartTime() ;
-                    int offset =  timestamp <0 ? 0:timestamp;
-                    int indextime = (offset/vacuateTime)*vacuateTime;
-                    int videoId = live.getVideoId() ;
-                    VbIndex index = vbIndexRepository.queryIndexByVideoTimeMeta(videoId,Long.valueOf(String.valueOf(indextime)),metaId) ;
-                    boolean idxexist = false ;
-                    if(null==index){
-//                        log.info("new index");
-                        index = new VbIndex();
-                        index.setCreateTime(time);
-                        index.setMetaId(metaId);
-                        index.setTimestamp(Long.valueOf(String.valueOf(indextime)));
-                        index.setVideoId(videoId);
-                        index = vbIndexRepository.save(index) ;
-                    }else {
-//                        log.info("index exist");
-                        idxexist=true ;
-                    }
 
-                    if(vacuateFlag & idxexist){
-//                        log.info("index vacuate ignore user message");
-                    }else{
-//                        log.info("index vacuate not ignore user message");
-                        VbUser user = new VbUser();
-                        user.setCreateTime(time);
-                        user.setIndexId(index.getIndexId());
-                        user.setTimestamp(timestamp);
-                        user.setUid(uid);
-                        user.setVideoId(videoId);
-                        vbUserRepository.save(user) ;
-                    }
+                    IndexForQueue ifq = new IndexForQueue() ;
+                    ifq.setVbMeta(meta);
+                    ifq.setVideoId(live.getVideoId());
+                    ifq.setChat_time(chat_time);
+                    ifq.setLiveStartTime(live.getStartTime());
+                    ifq.setTime(time);
+                    ifq.setVacuateTime(vacuateTime);
+                    metaQueue.put(ifq);
+                    log.info("meta deal end:"+new Date());
 
-                    VbConfig vc = vbConfigRepository.findOne(videoId) ;
-                    if(vc==null || "0".equals(vc.getUpdateStatus())){
-                        updateConfig(videoId) ;
-                    }
+                    Thread indexcons = new Thread(new IndexConsumer(indexQueue,vbUserRepository,vbConfigRepository,time,chat_time,live.getStartTime(),uid,live.getVideoId())) ;
+                    userservice.execute(indexcons);
+
                 }else{
                     log.info("not query live by liveroom:"+liveroom);
                 }
@@ -252,38 +334,4 @@ public class BulletLive {
 
     }
 
-    /**
-     * 查询直播Live
-     * @param liveroom
-     * @return
-     */
-    @Cacheable(CacheConfig.LIVE_ROOM)
-    private Live queryLiveByRoom(int liveroom){
-        log.info("go repository");
-        return liveRepository.queryLiveByRoom(liveroom) ;
-    }
-
-    /**
-     * 修改弹幕配置表
-     * @param videoId
-     */
-    private void updateConfig(int videoId){
-        VbConfig vc = vbConfigRepository.findOne(videoId) ;
-        long time = System.currentTimeMillis()/1000 ;
-        if(null==vc){
-            log.info("new video config");
-            vc = new VbConfig() ;
-            vc.setVideoId(videoId);
-            vc.setUpdateStatus(1);
-            vc.setUpdateTime(time);
-            vc.setVersion(1);
-            vc.setClient(client);
-        }else{
-            log.info("update video config");
-            vc.setUpdateStatus(1);
-            vc.setUpdateTime(time);
-        }
-        vbConfigRepository.save(vc) ;
-        log.info("updateConfig end:"+new Date());
-    }
 }
